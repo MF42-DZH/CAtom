@@ -100,3 +100,5 @@ For more information on available asserts and compile flags, please look at `tes
 * Do not memory allocate inside a test unless you are freeing it before an assertion. The test suite *will* leak memory if the assertion fails.
 * All assertions are macros. Do not use the \_\_-prefixed public functions.
 * For a more detailed version of the example including a sample makefile, see the `example` subdirectory.
+* You must compile this test suite to test with at least the `-g` flag and no optimisation flags to get useful results.
+
