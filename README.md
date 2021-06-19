@@ -1,6 +1,6 @@
 # CUnit
 
-This is a simple test suite for running unit tests on code.
+This is a simple test suite for running unit tests on C code.
 
 ## Quick Start
 
