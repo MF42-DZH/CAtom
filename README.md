@@ -110,7 +110,7 @@ Then to run, do:
 For this example above, expect the following output or similar:
 
 ```
---- testexample.c ---
+--- TESTS: testexample.c ---
 
 Running 2 tests.
 

@@ -1,0 +1,13 @@
+# Ignore junk files created from compiling
+*.o
+*.a
+*.dll
+*.exe
+*.com
+
+# Ignore the (ELF) example executable
+example/testexample
+
+# Ignore junk from language server nonsense
+.ccls-cache
+

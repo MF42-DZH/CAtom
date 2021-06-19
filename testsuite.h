@@ -4,34 +4,34 @@
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
  * @version   1.0.0
  * @date      2021-06-18
- * 
+ *
  * @copyright 0xFC963F18DC21 (c) 2021
- * 
+ *
  * This is CUnit. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
  * and (limited) integration testing on simple functions and pieces of data.
- * 
+ *
  * Like JUnit, all output goes to stderr. Also like JUnit, all tests are guaranteed to run, provided that
  * the system does not run out of memory when allocating strings to print verbose output.
- * 
+ *
  * It also provides rudimentary benchmarking capabilities, using clock_t in time.h.
- * 
+ *
  * Compile-time options:
  * - If you want verbose output, add -D__VERBOSE__ to your compile flags when compiling this test suite.
- * 
+ *
  * User guide:
  * - Create a series of test functions (preferably prefixed with test_), that conform to the TestFunction
  *   function pointer type.
  * - Create a static const array of Test structs, which hold a pointer to the test to run, and a user-friendly
  *   identifier that shows up in logs.
  * - Use the run_tests macro to run all the tests in the array.
- * 
+ *
  * The library then iterates through the array, running each test using the run_test function. If all assertions
  * pass, the test exits normally without a failure. If an assertion fails, control long-jumps back to run_test
  * and a failure is counted. A helpful message is also shown in stderr showing which function in which test file
  * has a failed assertion (and in what line the call occurs).
- * 
+ *
  * The many assertion functions to use are listed below, with documentation comments to help you in using them.
- * 
+ *
  * Notes:
  * - setjmp / longjmp may not be the most stable method of doing this. I am not responsible for damage to your
  *   device, as using this test suite is at your own risk.
@@ -91,7 +91,7 @@ void run_test(const Test test);
  */
 void __run_tests(const Test *tests, const size_t n);
 #define run_tests(tests, n) {\
-    fprintf(stderr, "--- %s ---\n\n", __FILE__);\
+    fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
     __run_tests(tests, n);\
 }
 
