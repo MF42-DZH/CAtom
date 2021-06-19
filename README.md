@@ -4,6 +4,8 @@ This is a simple test suite for running unit tests on C code.
 
 ## Quick Start
 
+* Clone this test suite into your project.
+* Build this test suite. A simple `make` is enough to do so.
 * Include `testsuite.h` in the test source code that is calling this test suite.
 * Create some test functions that match the signature `void (*TestFunction)(void)`.
 * Create an array of `static constant` `Test` structs at the global level in your test source.
@@ -12,6 +14,8 @@ This is a simple test suite for running unit tests on C code.
 * Simply run your test code in order to run the tests.
 
 ### Example
+
+Example shown in the `example` directory:
 
 `example.h`:
 ```c
@@ -37,7 +41,7 @@ float my_fma(float a, float b, float c) {
 
 ```c
 #include "example.h"
-#include "path/to/testsuite/testsuite.h"
+#include "../testsuite.h"
 
 void test_fma_correct_result() {
     assert_float_equals(my_fma(1.0f, 1.0f, 0.0f), 1.0f, 0.001f);
@@ -64,12 +68,44 @@ int main(void) {
 }
 ```
 
-Then do in some order resembling:
-* `make` the test suite in the test suite's directory.
-* `gcc -g example.c example.h -c -o example.o`.
-* `gcc testexample.c -c -o testexample.o`.
-* `gcc example.o testexample.o -o testexample -Lpath/to/testsuite -ltestsuite`.
-* `./testexample`
+`Makefile`:
+
+```makefile
+CC      = gcc
+CFLAGS  = -g3 -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
+LDFLAGS = -L.. -ltestsuite
+TARGET  = testexample
+OBJS    = example.o testexample.o
+BUILD   = $(TARGET)
+
+.SUFFIXES: .c .o
+
+.PHONY: all clean mod rebuild test testsuite
+
+all: mod testsuite $(BUILD) test
+
+rebuild: clean all
+
+clean:
+	rm -f $(BUILD) *.o
+
+$(TARGET): $(OBJS)
+	gcc $(OBJS) -o $@ $(LDFLAGS)
+
+mod:
+	touch $(TARGET)
+
+test:
+	./$(TARGET)
+
+testsuite:
+	+$(MAKE) -C ..
+
+example.o: example.h
+```
+
+Then to run, do:
+* `make` the test suite in the test code's directory (in this case, `example`).
 
 For this example above, expect the following output or similar:
 
