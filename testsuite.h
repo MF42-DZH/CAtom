@@ -2,7 +2,7 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.0.0
+ * @version   1.1.0
  * @date      2021-06-18
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -58,7 +58,14 @@
  */
 typedef void (*TestFunction)(void);
 
-#define TEST_NAME_MAX_LENGTH 512
+/**
+ * Benchmarking functions are also void funtions with no arguments.
+ *
+ * They do not contain asserts, and are used to check the performance of a function.
+ */
+typedef void (*BenchmarkFunction)(void);
+
+#define NAME_MAX_LENGTH 512
 
 // Helpers for printing assertion violations.
 void __set_last_file(const char *filename);
@@ -72,9 +79,14 @@ void __set_last_line(const int line);
  * E.g. test: test_ints_equal | name: "test if two returned ints are equal"
  */
 typedef struct {
-    TestFunction test;               /**< Pointer to test function. */
-    char name[TEST_NAME_MAX_LENGTH]; /**< Name or objective of function. */
+    TestFunction test;          /**< Pointer to test function. */
+    char name[NAME_MAX_LENGTH]; /**< Name or objective of function. */
 } Test;
+
+typedef struct {
+    BenchmarkFunction benchmark; /**< */
+    char name[NAME_MAX_LENGTH];  /**< */
+} Benchmark;
 
 /**
  * Run a single test.
@@ -84,15 +96,41 @@ typedef struct {
 void run_test(const Test test);
 
 /**
+ * Run a single benchmark 'times' amount of times.
+ * Before running a benchmark, the function is ran 'warmup' times.
+ * Only the time used for the non-warmup runs are usd in the average time calculation.
+ *
+ * @param  benchmark Benchmark to run.
+ * @param  warmup    Number of warmup iterations for benchmark.
+ * @param  times     Number of real iterations for benchmark.
+ * @return           Time duration of benchmark (all iterations + warmup iterations).
+ */
+double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
+
+/**
  * Run an array of tests.
  *
  * @param tests Array of tests to run.
  * @param n     How many tests are in that array.
  */
-void __run_tests(const Test *tests, const size_t n);
+void __run_tests(const Test tests[], const size_t n);
 #define run_tests(tests, n) {\
     fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
     __run_tests(tests, n);\
+}
+
+/**
+ * Run an array of benchmarks with the given settings.
+ *
+ * @param benchmarks Array of benchmarks to run.
+ * @param n          How many benchmarks are in that array.
+ * @param warmup     Number of warmup iterations for each benchmark.
+ * @param times      Number of real iterations for each benchmark.
+ */
+void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times);
+#define run_benchmarks(benchmarks, n, warmup, times) {\
+    fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
+    __run_benchmarks(benchmarks, n, warmup, times);\
 }
 
 /*

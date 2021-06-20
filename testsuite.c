@@ -2,14 +2,14 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.0.0
+ * @version   1.1.0
  * @date      2021-06-18
- * 
+ *
  * @copyright 0xFC963F18DC21 (c) 2021
- * 
+ *
  * This is CUnit. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
  * and (limited) integration testing on simple functions and pieces of data.
- * 
+ *
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
 
@@ -94,6 +94,7 @@ static void print_obj_hashes(const char *format, const void *obj1, const void *o
 // Internal assertion function.
 static jmp_buf env;
 static size_t failures = 0;
+static bool in_benchmark = false;
 
 static void fail_test(void) {
     ++failures;
@@ -108,7 +109,11 @@ static void fail_test(void) {
             __last_line_of_assert_caller,\
             __message\
     );\
-    fail_test();\
+    if (!in_benchmark) {\
+        fail_test();\
+    } else {\
+        fprintf(stderr, "\n*** [WARNING] Do not use asserts inside a benchmark! ***\n");\
+    }\
 }
 
 // Test runner utilities.
@@ -127,8 +132,7 @@ void __set_last_line(const int line) {
 void run_test(const Test test) {
     fprintf(stderr, "Running test \"%s\":\n", test.name);
 
-    clock_t time;
-    time = clock();
+    clock_t time = clock();
 
     if (setjmp(env) == 0) {
         test.test();
@@ -139,12 +143,57 @@ void run_test(const Test test) {
 
     time = clock() - time;
 
-    fprintf(stderr, "\"%s\" terminated in %f seconds.\n%s\n\n",
-        test.name, (double) time / CLOCKS_PER_SEC, SEP
+    fprintf(stderr, "\"%s\" terminated in %f seconds.\n",
+        test.name, (double) time / CLOCKS_PER_SEC
     );
 }
 
-void __run_tests(const Test *tests, const size_t n) {
+double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
+    in_benchmark = true;
+
+    fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark.name);
+
+    clock_t total_time = 0;
+    clock_t with_wm = 0;
+
+    for (size_t i = 0; i < warmup + times; ++i) {
+        if (i < warmup) {
+            fprintf(stderr, "Running warmup iteration %zu / %zu. ", i + 1, warmup);
+        } else {
+            fprintf(stderr, "Running benchmark iteration %zu / %zu. ", i + 1, times);
+        }
+
+        clock_t time_taken = clock();
+        benchmark.benchmark();
+        time_taken = clock() - time_taken;
+
+        if (i >= warmup) {
+            total_time += time_taken;
+            fprintf(stderr, "Finished benchmark iteration %zu / %zu in %f seconds.\n", i + 1, times, (double) time_taken / CLOCKS_PER_SEC);
+        } else {
+            fprintf(stderr, "Finished warmup iteration %zu / %zu in %f seconds.\n", i + 1, warmup, (double) time_taken / CLOCKS_PER_SEC);
+        }
+
+        with_wm += time_taken;
+    }
+
+    in_benchmark = false;
+
+    fprintf(stderr, "\nBenchmark complete. \"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup), taking %f seconds on average (%f seconds average with warmup).\n%s\n",
+        benchmark.name,
+        times,
+        warmup,
+        (double) total_time / CLOCKS_PER_SEC,
+        (double) with_wm / CLOCKS_PER_SEC,
+        (double) total_time / (times * CLOCKS_PER_SEC),
+        (double) with_wm / ((times + warmup) * CLOCKS_PER_SEC),
+        SEP
+    );
+
+    return (double) with_wm / CLOCKS_PER_SEC;
+}
+
+void __run_tests(const Test tests[], const size_t n) {
     fprintf(stderr, "Running %zu tests.\n\n", n);
 
     clock_t time;
@@ -153,11 +202,26 @@ void __run_tests(const Test *tests, const size_t n) {
     for (size_t i = 0; i < n; ++i) {
         fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
         run_test(tests[i]);
+        fprintf(stderr, "%s\n\n", SEP);
     }
 
     time = clock() - time;
 
     fprintf(stderr, "Tests completed in %f seconds with %zu / %zu passed (%zu failed).\n", (double) time / CLOCKS_PER_SEC, n - failures, n, failures);
+}
+
+void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times) {
+    fprintf(stderr, "Running %zu benchmarks.\n\n", n);
+
+    clock_t total = 0;
+
+    for (size_t i = 0; i < n; ++i) {
+        fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
+        total += run_benchmark(benchmarks[i], warmup, times);
+        fprintf(stderr, "%s\n\n", SEP);
+    }
+
+    fprintf(stderr, "Benchmarks completed in %f seconds.\n", (double) total / CLOCKS_PER_SEC);
 }
 
 // Checker functions for the test suite.
