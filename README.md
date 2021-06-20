@@ -5,15 +5,15 @@ This is a simple test suite for running unit tests on C code.
 ## Quick Start
 
 <ol start="0">
-    <li>Clone this test suite into your project. If your project is also a git repository, add `CUnit/*` To your `.gitignore` first.</li>
-    <li>Build this test suite. A simple `make` is enough to do so.</li>
-    <li>Include `testsuite.h` in the test source code that is calling this test suite.</li>
-    <li>Create some test functions that match the signature `void (*TestFunction)(void)`.</li>
-    <li>Create an array of `static constant` `Test` structs at the global level in your test source.</li>
-    <li>Call `run_tests` using that array of `Test` structs in `main`.</li>
-    <li>When building the test sources, link `libtestsuite.a` from this folder.</li>
+    <li>Clone this test suite into your project. If your project is also a git repository, add <tt>CUnit/*</tt> To your <tt>.gitignore</tt> first.</li>
+    <li>Build this test suite. A simple <tt>make</tt> is enough to do so.</li>
+    <li>Include <tt>testsuite.h</tt> in the test source code that is calling this test suite.</li>
+    <li>Create some test functions that match the signature <tt>void (*TestFunction)(void)</tt>.</li>
+    <li>Create a <tt>static constant</tt> array of <tt>Test</tt> structs at the global level in your test source.</li>
+    <li>Call <tt>run_tests</tt> using that array of <tt>Test</tt> structs in <tt>main</tt>.</li>
+    <li>When building the test sources, link <tt>libtestsuite.a</tt> from this folder.</li>
     <li>Simply run your test code in order to run the tests.</li>
-    <li>Repeat steps 4-6 using the `void (*BenchmarkFunction)(void)` signature, the `Benchmark` struct and the `run_benchmarks` function to run a set of benchmarks.</li>
+    <li>Repeat steps 4-6 using the <tt>void (*BenchmarkFunction)(void)</tt> signature, the <tt>Benchmark</tt> struct and the <tt>run_benchmarks</tt> function to run a set of benchmarks.</li>
 </ol>
 
 ### Example
