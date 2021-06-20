@@ -1,6 +1,6 @@
 CC      = gcc
 CFLAGS  = -g3 -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
-LIB     = libtestsuite.a
+LIB     = libtestsuite.a.dll
 LIBOBJS = testsuite.o
 BUILD   = $(LIB)
 
@@ -13,7 +13,7 @@ all: $(BUILD)
 rebuild: clean all
 
 clean:
-	rm -f $(BUILD) *.o
+	DEL /F $(BUILD) *.o
 
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
