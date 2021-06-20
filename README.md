@@ -40,16 +40,16 @@ float my_fma(float a, float b, float c) {
 `testexample.c`:
 
 ```c
-#include "example.h"
 #include "../testsuite.h"
+#include "example.h"
 
-void test_fma_correct_result() {
+void test_fma_correct_result(void) {
     assert_float_equals(my_fma(1.0f, 1.0f, 0.0f), 1.0f, 0.001f);
     assert_float_equals(my_fma(2.0f, 3.0f, 4.0f), 10.0f, 0.001f);
     assert_float_equals(my_fma(8.0f, 1.5f, 2.5f), 14.5f, 0.001f);
 }
 
-void test_fma_negatives() {
+void test_fma_negatives(void) {
     assert_float_equals(my_fma(-1.0f, 1.0f, 0.0f), -1.0f, 0.001f);
     assert_float_equals(my_fma(1.0f, -1.0f, 0.0f), -1.0f, 0.001f);
     assert_float_equals(my_fma(-1.0f, -1.0f, 0.0f), 1.0f, 0.001f);
@@ -57,13 +57,28 @@ void test_fma_negatives() {
     assert_float_equals(my_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
 }
 
+void benchmark_fma(void) {
+    for (int i = 0; i < 1000; ++i) {
+        float a = 16.5f;
+        float b = 18.5f;
+        float c = 2.0f;
+
+        float t = my_fma(a, b, c);
+    }
+}
+
 static const Test TESTS[] = {
     { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
     { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" }
 };
 
+static const Benchmark BENCHMARKS[] = {
+    { .benchmark = benchmark_fma, .name = "Performance check for fma" }
+};
+
 int main(void) {
     run_tests(TESTS, sizeof(TESTS) / sizeof(Test));
+    run_benchmarks(BENCHMARKS, sizeof(BENCHMARKS) / sizeof(Benchmark), 5, 5);
     return 0;
 }
 ```
@@ -117,16 +132,39 @@ Running 2 tests.
 --------------------------------------------------------------------------------
 [1 / 2] Running test "Test if fma returns correct results":
 
-Test passed. "Test if fma returns correct results" terminated in 0.001000 seconds.
+Test passed. "Test if fma returns correct results" terminated in 0.000029 seconds.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 [2 / 2] Running test "Test if fma correctly handles negatives":
 
-Test passed. "Test if fma correctly handles negatives" terminated in 0.002000 seconds.
+Test passed. "Test if fma correctly handles negatives" terminated in 0.000012 seconds.
 --------------------------------------------------------------------------------
 
-Tests completed in 0.043000 seconds with 2 / 2 passed (0 failed).
+Tests completed in 0.000080 seconds with 2 / 2 passed (0 failed).
+
+--- BENCHMARKS: testexample.c ---
+
+Running 1 benchmarks.
+
+--------------------------------------------------------------------------------
+[1 / 1] Running benchmark "Performance check for fma":
+
+Running warmup iteration 1 / 5. Finished warmup iteration 1 / 5 in 0.000010 seconds.
+Running warmup iteration 2 / 5. Finished warmup iteration 2 / 5 in 0.000009 seconds.
+Running warmup iteration 3 / 5. Finished warmup iteration 3 / 5 in 0.000010 seconds.
+Running warmup iteration 4 / 5. Finished warmup iteration 4 / 5 in 0.000010 seconds.
+Running warmup iteration 5 / 5. Finished warmup iteration 5 / 5 in 0.000009 seconds.
+Running benchmark iteration 1 / 5. Finished benchmark iteration 1 / 5 in 0.000008 seconds.
+Running benchmark iteration 2 / 5. Finished benchmark iteration 2 / 5 in 0.000008 seconds.
+Running benchmark iteration 3 / 5. Finished benchmark iteration 3 / 5 in 0.000007 seconds.
+Running benchmark iteration 4 / 5. Finished benchmark iteration 4 / 5 in 0.000009 seconds.
+Running benchmark iteration 5 / 5. Finished benchmark iteration 5 / 5 in 0.000007 seconds.
+
+Benchmark complete. "Performance check for fma" finished 5 iterations (and 5 warmup iterations) in 0.000039 seconds (0.000087 seconds with warmup), taking 0.000008 seconds on average (0.000009 seconds average with warmup).
+--------------------------------------------------------------------------------
+
+Benchmarks completed in 0.000087 seconds.
 ```
 
 For more information on available asserts and compile flags, please look at `testsuite.h`.

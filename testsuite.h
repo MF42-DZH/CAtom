@@ -343,4 +343,3 @@ void __assert_null(const void *ptr);
 #define assert_null(ptr) __gen_assert__(__assert_null, ptr)
 
 #endif  // __TESTSUITE_H__
-

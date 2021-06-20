@@ -39,4 +39,3 @@ int main(void) {
     run_benchmarks(BENCHMARKS, sizeof(BENCHMARKS) / sizeof(Benchmark), 5, 5);
     return 0;
 }
-

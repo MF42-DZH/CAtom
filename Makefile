@@ -19,4 +19,3 @@ $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
 testsuite.o: testsuite.h
-
