@@ -4,3 +4,4 @@
 float my_fma(float a, float b, float c);
 
 #endif  // __EXAMPLE_H__
+

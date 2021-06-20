@@ -148,7 +148,7 @@ void run_test(const Test test) {
     );
 }
 
-double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
+clock_t run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
     in_benchmark = true;
 
     fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark.name);
@@ -160,7 +160,7 @@ double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_
         if (i < warmup) {
             fprintf(stderr, "Running warmup iteration %zu / %zu. ", i + 1, warmup);
         } else {
-            fprintf(stderr, "Running benchmark iteration %zu / %zu. ", i + 1, times);
+            fprintf(stderr, "Running benchmark iteration %zu / %zu. ", i - warmup + 1, times);
         }
 
         clock_t time_taken = clock();
@@ -169,7 +169,7 @@ double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_
 
         if (i >= warmup) {
             total_time += time_taken;
-            fprintf(stderr, "Finished benchmark iteration %zu / %zu in %f seconds.\n", i + 1, times, (double) time_taken / CLOCKS_PER_SEC);
+            fprintf(stderr, "Finished benchmark iteration %zu / %zu in %f seconds.\n", i - warmup + 1, times, (double) time_taken / CLOCKS_PER_SEC);
         } else {
             fprintf(stderr, "Finished warmup iteration %zu / %zu in %f seconds.\n", i + 1, warmup, (double) time_taken / CLOCKS_PER_SEC);
         }
@@ -179,18 +179,17 @@ double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_
 
     in_benchmark = false;
 
-    fprintf(stderr, "\nBenchmark complete. \"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup), taking %f seconds on average (%f seconds average with warmup).\n%s\n",
+    fprintf(stderr, "\nBenchmark complete. \"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup), taking %f seconds on average (%f seconds average with warmup).\n",
         benchmark.name,
         times,
         warmup,
         (double) total_time / CLOCKS_PER_SEC,
         (double) with_wm / CLOCKS_PER_SEC,
         (double) total_time / (times * CLOCKS_PER_SEC),
-        (double) with_wm / ((times + warmup) * CLOCKS_PER_SEC),
-        SEP
+        (double) with_wm / ((times + warmup) * CLOCKS_PER_SEC)
     );
 
-    return (double) with_wm / CLOCKS_PER_SEC;
+    return with_wm;
 }
 
 void __run_tests(const Test tests[], const size_t n) {
@@ -207,7 +206,7 @@ void __run_tests(const Test tests[], const size_t n) {
 
     time = clock() - time;
 
-    fprintf(stderr, "Tests completed in %f seconds with %zu / %zu passed (%zu failed).\n", (double) time / CLOCKS_PER_SEC, n - failures, n, failures);
+    fprintf(stderr, "Tests completed in %f seconds with %zu / %zu passed (%zu failed).\n\n", (double) time / CLOCKS_PER_SEC, n - failures, n, failures);
 }
 
 void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times) {
@@ -221,7 +220,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
         fprintf(stderr, "%s\n\n", SEP);
     }
 
-    fprintf(stderr, "Benchmarks completed in %f seconds.\n", (double) total / CLOCKS_PER_SEC);
+    fprintf(stderr, "Benchmarks completed in %f seconds.\n\n", (double) total / CLOCKS_PER_SEC);
 }
 
 // Checker functions for the test suite.

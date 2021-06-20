@@ -50,6 +50,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 /**
  * Test functions are essentially void functions that take no arguments.
@@ -105,7 +106,7 @@ void run_test(const Test test);
  * @param  times     Number of real iterations for benchmark.
  * @return           Time duration of benchmark (all iterations + warmup iterations).
  */
-double run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
+clock_t run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
 
 /**
  * Run an array of tests.
@@ -129,7 +130,7 @@ void __run_tests(const Test tests[], const size_t n);
  */
 void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times);
 #define run_benchmarks(benchmarks, n, warmup, times) {\
-    fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
+    fprintf(stderr, "--- BENCHMARKS: %s ---\n\n", __FILE__);\
     __run_benchmarks(benchmarks, n, warmup, times);\
 }
 

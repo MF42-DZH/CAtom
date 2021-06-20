@@ -20,7 +20,7 @@ $(TARGET): $(OBJS)
 	gcc $(OBJS) -o $@ $(LDFLAGS)
 
 mod:
-	touch $(TARGET)
+	touch $(TARGET).c
 
 test:
 	./$(TARGET)
