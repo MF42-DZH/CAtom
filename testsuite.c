@@ -25,6 +25,71 @@
 #define MAX_STR_LEN 1024
 #define SEP         "--------------------------------------------------------------------------------"
 
+// Helper for printing coloured text for testing.
+static void tfprinterr(const char* str, const bool passing);
+
+static const char *PASSING = "\x1b[32;1m%s\x1b[0m";
+static const char *FAILING = "\x1b[31;1m%s\x1b[0m";
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+#include <fileapi.h>
+
+static HANDLE __stderr_handle__ = NULL;
+static DWORD __stderr_mode__ = 0;
+
+static bool stderr_isatty(void) {
+    HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+    DWORD typeof_stderr = GetFileType(stderr_handle);
+
+    if (typeof_stderr == FILE_TYPE_CHAR) {
+        // Potentially console?
+        DWORD mode = 0;
+        if (GetConsoleMode(stderr_handle, &mode)) {
+            // Is a console!
+            __stderr_handle__ = stderr_handle;
+            __stderr_mode__ = 0;
+
+            return true;
+        } else {
+            // Is a printer or something.
+            return false;
+        }
+    } else {
+        // Nope.
+        return false;
+    }
+}
+
+static void tfprinterr(const char* str, const bool passing) {
+    static const DWORD DEFAULT_ATTR = 7;
+    static const DWORD PASSING_ATTR = 10;
+    static const DWORD FAILING_ATTR = 12;
+
+    if (stderr_isatty()) {
+        if (__stderr_mode__ & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
+            fprintf(stderr, passing ? PASSING : FAILING, str);
+        } else {
+            SetConsoleTextAttribute(__stderr_handle__, passing ? PASSING_ATTR : FAILING_ATTR);
+            fprintf(stderr, "%s", str);
+            SetConsoleTextAttribute(__stderr_handle__, DEFAULT_ATTR);
+        }
+    } else {
+        fprintf(stderr, "%s", str);
+    }
+}
+#else
+#include <unistd.h>
+
+static void tfprinterr(const char* str, const bool passing) {
+    if (isatty(fileno(stderr))) {
+        fprintf(stderr, passing ? PASSING : FAILING, str);
+    } else {
+        fprintf(stderr, "%s", str);
+    }
+}
+#endif
+
 // Helper for assertion failure message printer.
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
 static char __message[MAX_STR_LEN] = { '\0' };
@@ -136,9 +201,9 @@ void run_test(const Test test) {
 
     if (setjmp(env) == 0) {
         test.test();
-        fprintf(stderr, "\nTest passed. ");
+        tfprinterr("\nTest passed. ", true);
     } else {
-        fprintf(stderr, "\nTest failed. ");
+        tfprinterr("\nTest failed. ", false);
     }
 
     time = clock() - time;
