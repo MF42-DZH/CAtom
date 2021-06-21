@@ -141,10 +141,10 @@ Test passed. "Test if fma returns correct results" terminated in 0.000029 second
 --------------------------------------------------------------------------------
 [2 / 2] Running test "Test if fma correctly handles negatives":
 
-Test passed. "Test if fma correctly handles negatives" terminated in 0.000012 seconds.
+Test passed. "Test if fma correctly handles negatives" terminated in 0.000009 seconds.
 --------------------------------------------------------------------------------
 
-Tests completed in 0.000080 seconds with 2 / 2 passed (0 failed).
+Tests completed in 0.000067 seconds with 2 / 2 passed (0 failed).
 
 --- BENCHMARKS: testexample.c ---
 
@@ -153,21 +153,23 @@ Running 1 benchmarks.
 --------------------------------------------------------------------------------
 [1 / 1] Running benchmark "Performance check for fma":
 
-Running warmup iteration 1 / 5. Finished warmup iteration 1 / 5 in 0.000010 seconds.
-Running warmup iteration 2 / 5. Finished warmup iteration 2 / 5 in 0.000009 seconds.
-Running warmup iteration 3 / 5. Finished warmup iteration 3 / 5 in 0.000010 seconds.
-Running warmup iteration 4 / 5. Finished warmup iteration 4 / 5 in 0.000010 seconds.
-Running warmup iteration 5 / 5. Finished warmup iteration 5 / 5 in 0.000009 seconds.
-Running benchmark iteration 1 / 5. Finished benchmark iteration 1 / 5 in 0.000008 seconds.
+Running warmup iteration 1 / 5. Finished warmup iteration 1 / 5 in 0.000008 seconds.
+Running warmup iteration 2 / 5. Finished warmup iteration 2 / 5 in 0.000007 seconds.
+Running warmup iteration 3 / 5. Finished warmup iteration 3 / 5 in 0.000007 seconds.
+Running warmup iteration 4 / 5. Finished warmup iteration 4 / 5 in 0.000008 seconds.
+Running warmup iteration 5 / 5. Finished warmup iteration 5 / 5 in 0.000007 seconds.
+Running benchmark iteration 1 / 5. Finished benchmark iteration 1 / 5 in 0.000007 seconds.
 Running benchmark iteration 2 / 5. Finished benchmark iteration 2 / 5 in 0.000008 seconds.
 Running benchmark iteration 3 / 5. Finished benchmark iteration 3 / 5 in 0.000007 seconds.
-Running benchmark iteration 4 / 5. Finished benchmark iteration 4 / 5 in 0.000009 seconds.
-Running benchmark iteration 5 / 5. Finished benchmark iteration 5 / 5 in 0.000007 seconds.
+Running benchmark iteration 4 / 5. Finished benchmark iteration 4 / 5 in 0.000007 seconds.
+Running benchmark iteration 5 / 5. Finished benchmark iteration 5 / 5 in 0.000008 seconds.
 
-Benchmark complete. "Performance check for fma" finished 5 iterations (and 5 warmup iterations) in 0.000039 seconds (0.000087 seconds with warmup), taking 0.000008 seconds on average (0.000009 seconds average with warmup).
+Benchmark complete.
+"Performance check for fma" finished 5 iterations (and 5 warmup iterations) in 0.000037 seconds (0.000074 seconds with warmup).
+It took 0.000007 seconds on average to run (0.000007 seconds average with warmup).
 --------------------------------------------------------------------------------
 
-Benchmarks completed in 0.000087 seconds.
+Benchmarks completed in 0.000074 seconds.
 ```
 
 For more information on available asserts and compile flags, please look at `testsuite.h`.

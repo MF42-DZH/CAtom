@@ -2,7 +2,7 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.2.2
+ * @version   1.3.0
  * @date      2021-06-18
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -69,10 +69,26 @@ typedef void (*BenchmarkFunction)(void);
 #define NAME_MAX_LENGTH 512
 
 // Helpers for printing assertion violations.
+
+/**
+ * Set the name of the last file that used an assert.
+ *
+ * @param filename Name of user file.
+ */
 void __set_last_file(const char *filename);
 
+/**
+ * Set the name of the last function that used an assert.
+ *
+ * @param caller Name of assert caller.
+ */
 void __set_last_caller(const char *caller);
 
+/**
+ * Set the last line where an assert was used.
+ *
+ * @param line Line where assert was called.
+ */
 void __set_last_line(const int line);
 
 /**
@@ -94,7 +110,7 @@ typedef struct {
  *
  * @param test Test to run.
  */
-void run_test(const Test test);
+void __run_test(const Test test);
 
 /**
  * Run a single benchmark 'times' amount of times.
@@ -106,7 +122,7 @@ void run_test(const Test test);
  * @param  times     Number of real iterations for benchmark.
  * @return           Time duration of benchmark (all iterations + warmup iterations).
  */
-clock_t run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
+clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
 
 /**
  * Run an array of tests.
@@ -145,6 +161,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
  * the values being pointed to by the pointers in the arrays.
  */
 
+// The general assert template for this test suite.
 #define __gen_assert__(name, ...) {\
     __set_last_file(__FILE__);\
     __set_last_caller(__func__);\

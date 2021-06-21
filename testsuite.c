@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.2.2
+ * @version   1.3.0
  * @date      2021-06-18
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -210,7 +210,7 @@ void __set_last_line(const int line) {
     __last_line_of_assert_caller = line;
 }
 
-void run_test(const Test test) {
+void __run_test(const Test test) {
     fprintf(stderr, "Running test \"%s\":\n", test.name);
 
     clock_t time = clock();
@@ -229,7 +229,7 @@ void run_test(const Test test) {
     );
 }
 
-clock_t run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
+clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
     in_benchmark = true;
 
     fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark.name);
@@ -260,7 +260,7 @@ clock_t run_benchmark(const Benchmark benchmark, const size_t warmup, const size
 
     in_benchmark = false;
 
-    fprintf(stderr, "\nBenchmark complete. \"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup), taking %f seconds on average (%f seconds average with warmup).\n",
+    fprintf(stderr, "\nBenchmark complete.\n\"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup).\nIt took %f seconds on average to run (%f seconds average with warmup).\n",
         benchmark.name,
         times,
         warmup,
@@ -281,7 +281,7 @@ void __run_tests(const Test tests[], const size_t n) {
 
     for (size_t i = 0; i < n; ++i) {
         fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
-        run_test(tests[i]);
+        __run_test(tests[i]);
         fprintf(stderr, "%s\n\n", SEP);
     }
 
@@ -297,7 +297,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
 
     for (size_t i = 0; i < n; ++i) {
         fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
-        total += run_benchmark(benchmarks[i], warmup, times);
+        total += __run_benchmark(benchmarks[i], warmup, times);
         fprintf(stderr, "%s\n\n", SEP);
     }
 
@@ -369,13 +369,8 @@ void __assert_string_not_equals(const char *str1, const char *str2) {
     __test_assert__(strcmp(str1, str2) != 0);
 }
 
-static bool in_arr_eq = false;
-
 void __assert_equals(const void *obj1, const void *obj2, const size_t size) {
-    if (!in_arr_eq) {
-        print_obj_hashes("OBJ EQ: %s == %s?\n", b1, b2, size);
-    }
-
+    print_obj_hashes("OBJ EQ: %s == %s?\n", b1, b2, size);
     __test_assert__(memcmp(obj1, obj2, size) == 0);
 }
 
@@ -387,13 +382,9 @@ void __assert_not_equals(const void *obj1, const void *obj2, const size_t size) 
 void __assert_array_equals(const void *arr1, const void *arr2, const size_t n, const size_t size) {
     print_obj_hashes("ARR EQ: %s == %s?\n", b1, b2, n * size);
 
-    in_arr_eq = true;
-
-    for (size_t i = 0; i < n * size; ++i) {
-        __assert_equals(((uint8_t *) arr1) + i, (uint8_t *) arr2 + i, size);
+    for (size_t i = 0; i < n; ++i) {
+        __test_assert__(memcmp((uint8_t *) arr1 + (i * size), (uint8_t *) arr2 + (i * size), size) == 0);
     }
-
-    in_arr_eq = false;
 }
 
 void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t n, const size_t size) {
