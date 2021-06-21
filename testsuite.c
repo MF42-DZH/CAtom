@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.2.0
+ * @version   1.2.1
  * @date      2021-06-18
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -48,7 +48,7 @@ static bool stderr_isatty(void) {
         if (GetConsoleMode(stderr_handle, &mode)) {
             // Is a console!
             __stderr_handle__ = stderr_handle;
-            __stderr_mode__ = 0;
+            __stderr_mode__ = mode;
 
             return true;
         } else {
