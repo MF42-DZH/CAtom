@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.2.1
+ * @version   1.2.2
  * @date      2021-06-18
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -26,7 +26,7 @@
 #define SEP         "--------------------------------------------------------------------------------"
 
 // Helper for printing coloured text for testing.
-static void tfprinterr(const char* str, const bool passing);
+static void tprinterr(const char* str, const bool passing);
 
 static const char *PASSING = "\x1b[32;1m%s\x1b[0m";
 static const char *FAILING = "\x1b[31;1m%s\x1b[0m";
@@ -61,30 +61,46 @@ static bool stderr_isatty(void) {
     }
 }
 
-static void tfprinterr(const char* str, const bool passing) {
+static void tprinterr(const char* str, const bool passing) {
+    // Constant console colour attributes.
     static const DWORD DEFAULT_ATTR = 7;
     static const DWORD PASSING_ATTR = 10;
     static const DWORD FAILING_ATTR = 12;
 
-    if (stderr_isatty()) {
+    // Check if console.
+    static bool set = true;
+    static bool istty = false;
+
+    if (!set) {
+        set = true;
+        istty = stderr_isatty();
+    }
+
+    // Handle different scenarios depending on if console or not.
+    if (istty) {
         if (__stderr_mode__ & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
+            // Use ASCII escapes; console has VT-compat.
             fprintf(stderr, passing ? PASSING : FAILING, str);
         } else {
+            // Legacy handling, using text attributes.
             SetConsoleTextAttribute(__stderr_handle__, passing ? PASSING_ATTR : FAILING_ATTR);
             fprintf(stderr, "%s", str);
             SetConsoleTextAttribute(__stderr_handle__, DEFAULT_ATTR);
         }
     } else {
+        // No colour.
         fprintf(stderr, "%s", str);
     }
 }
 #else
 #include <unistd.h>
 
-static void tfprinterr(const char* str, const bool passing) {
+static void tprinterr(const char* str, const bool passing) {
     if (isatty(fileno(stderr))) {
+        // Use ASCII escapes.
         fprintf(stderr, passing ? PASSING : FAILING, str);
     } else {
+        // No colour.
         fprintf(stderr, "%s", str);
     }
 }
@@ -201,9 +217,9 @@ void run_test(const Test test) {
 
     if (setjmp(env) == 0) {
         test.test();
-        tfprinterr("\nTest passed. ", true);
+        tprinterr("\nTest passed. ", true);
     } else {
-        tfprinterr("\nTest failed. ", false);
+        tprinterr("\nTest failed. ", false);
     }
 
     time = clock() - time;
