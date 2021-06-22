@@ -68,7 +68,7 @@ static void tprinterr(const char* str, const bool passing) {
     static const DWORD FAILING_ATTR = 12;
 
     // Check if console.
-    static bool set = true;
+    static bool set = false;
     static bool istty = false;
 
     if (!set) {
