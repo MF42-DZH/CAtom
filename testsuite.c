@@ -2,8 +2,8 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.3.0
- * @date      2021-06-18
+ * @version   1.3.1
+ * @date      2021-06-23
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -61,11 +61,22 @@ static bool stderr_isatty(void) {
     }
 }
 
+static bool get_console_colour(HANDLE console, WORD *out) {
+    CONSOLE_SCREEN_BUFFER_INFO info;
+
+    if (!GetConsoleScreenBufferInfo(console, &info)) {
+        return false;
+    }
+
+    *out = info.wAttributes;
+    return true;
+}
+
 static void tprinterr(const char* str, const bool passing) {
     // Constant console colour attributes.
-    static const DWORD DEFAULT_ATTR = 7;
-    static const DWORD PASSING_ATTR = 10;
-    static const DWORD FAILING_ATTR = 12;
+    static const WORD DEFAULT_ATTR = 7;
+    static const WORD PASSING_ATTR = 10;
+    static const WORD FAILING_ATTR = 12;
 
     // Check if console.
     static bool set = false;
@@ -82,10 +93,16 @@ static void tprinterr(const char* str, const bool passing) {
             // Use ASCII escapes; console has VT-compat.
             fprintf(stderr, passing ? PASSING : FAILING, str);
         } else {
+            // Get current console colour or default.
+            WORD colour = DEFAULT_ATTR;
+            if (!get_console_colour(__stderr_handle__, &colour)) {
+                fprintf(stderr, "*** [WARNING] STDERR attribute fetching failed! ***");
+            }
+
             // Legacy handling, using text attributes.
             SetConsoleTextAttribute(__stderr_handle__, passing ? PASSING_ATTR : FAILING_ATTR);
             fprintf(stderr, "%s", str);
-            SetConsoleTextAttribute(__stderr_handle__, DEFAULT_ATTR);
+            SetConsoleTextAttribute(__stderr_handle__, colour);
         }
     } else {
         // No colour.
