@@ -148,7 +148,7 @@ Tests completed in 0.000067 seconds with 2 / 2 passed (0 failed).
 
 --- BENCHMARKS: testexample.c ---
 
-Running 1 benchmarks.
+Running 1 benchmark.
 
 --------------------------------------------------------------------------------
 [1 / 1] Running benchmark "Performance check for fma":

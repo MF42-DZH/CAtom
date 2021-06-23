@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.3.2
+ * @version   1.3.3
  * @date      2021-06-23
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -291,7 +291,7 @@ clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const si
 }
 
 void __run_tests(const Test tests[], const size_t n) {
-    fprintf(stderr, "Running %zu tests.\n\n", n);
+    fprintf(stderr, "Running %zu test%s.\n\n", n, n != 1 ? "s" : "");
 
     clock_t time;
     time = clock();
@@ -308,7 +308,7 @@ void __run_tests(const Test tests[], const size_t n) {
 }
 
 void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times) {
-    fprintf(stderr, "Running %zu benchmarks.\n\n", n);
+    fprintf(stderr, "Running %zu benchmark%s.\n\n", n, n != 1 ? "s" : "");
 
     clock_t total = 0;
 
