@@ -39,6 +39,7 @@
  *   assertion. The test suite WILL LEAK MEMORY if the assertion fails.
  * - The same warning applies to file operations. Close all files before making any assertions.
  * - There is no concurrency. Tests will always run sequentially in the order defined in your test array.
+ * - Only one assert may fail in a test at a time.
  * - As in HOWTO.md, DO NOT USE ANY FUNCTION PREFIXED WITH __ IN YOUR TEST FILES.
  */
 
