@@ -90,7 +90,7 @@ int main(void) {
 
 ```makefile
 CC      = gcc
-CFLAGS  = -g3 -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
+CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LDFLAGS = -L.. -ltestsuite
 TARGET  = testexample
 OBJS    = example.o testexample.o
