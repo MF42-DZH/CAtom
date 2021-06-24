@@ -2,8 +2,8 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.3.3
- * @date      2021-06-23
+ * @version   1.3.4
+ * @date      2021-06-24
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *

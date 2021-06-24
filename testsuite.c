@@ -2,20 +2,21 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.3.3
- * @date      2021-06-23
+ * @version   1.3.4
+ * @date      2021-06-24
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
  * This is CUnit. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
  * and (limited) integration testing on simple functions and pieces of data.
  *
+ * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing.
+ *
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
 
 #include "testsuite.h"
 
-#include <assert.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -96,7 +97,7 @@ static void tprinterr(const char* str, const bool passing) {
             // Get current console colour or default.
             WORD colour = DEFAULT_ATTR;
             if (!get_console_colour(__stderr_handle__, &colour)) {
-                fprintf(stderr, "*** [WARNING] STDERR attribute fetching failed! ***");
+                fprintf(stderr, "*** [WARNING] STDERR attribute fetching failed! ***\n");
             }
 
             // Legacy handling, using text attributes.
@@ -148,14 +149,22 @@ void vbprintf(FILE *stream, const char *format, ...) {
 // Printing utilities.
 static char *b1 = NULL, *b2 = NULL;
 
-static void init_b1_b2(size_t size) {
+static bool init_b1_b2(size_t size) {
     // Allocate b1-b2.
     b1 = (char *) calloc(size + 1, sizeof(char));
     b2 = (char *) calloc(size + 1, sizeof(char));
 
     // Check if allocation successful.
-    assert(b1);
-    assert(b2);
+    if (!(b1 && b2)) {
+        if (b1) {
+            free(b1);
+        }
+
+        fprintf(stderr, "*** [WARNING] Strings for printing hashes failed to be allocated! ***\n");
+        return false;
+    }
+
+    return true;
 }
 
 static void free_b1_b2(void) {
@@ -182,10 +191,11 @@ static void obj_hash(const void *obj, char *out_str, const size_t total_length) 
 
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
 #ifdef __VERBOSE__
-    init_b1_b2(size);
-    obj_hash(obj1, b1, size); obj_hash(obj2, b2, size);
-    vbprintf(stderr, format, b1, b2);
-    free_b1_b2();
+    if (init_b1_b2(size)) {
+        obj_hash(obj1, b1, size); obj_hash(obj2, b2, size);
+        vbprintf(stderr, format, b1, b2);
+        free_b1_b2();
+    }
 #endif
 }
 
