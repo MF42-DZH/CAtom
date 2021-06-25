@@ -181,3 +181,4 @@ For more information on available asserts and compile flags, please look at `tes
 * For a more detailed version of the example including a sample makefile, see the `example` subdirectory.
 * You must compile this test suite and any test sources with at least the `-g` flag and no optimisation flags (alternatively `-Og`) to get useful results.
 * On Windows, use `Makefile.win` instead of the normal `Makefile`.
+* Use the `-V` makefiles to use the verbose test suite. Useful for debugging when asserts occur.
