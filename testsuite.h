@@ -108,9 +108,13 @@ typedef struct {
     char name[NAME_MAX_LENGTH]; /**< Name or objective of function. */
 } Test;
 
+/**
+ * A pair struct holding a benchmark function and the benchmark's name.
+ * E.g. test: benchmark_ints_equal | name: "benchmark performance of equality check for ints"
+ */
 typedef struct {
-    BenchmarkFunction benchmark; /**< */
-    char name[NAME_MAX_LENGTH];  /**< */
+    BenchmarkFunction benchmark; /**< Pointer to benchmark function. */
+    char name[NAME_MAX_LENGTH];  /**< Benchmark name or description. */
 } Benchmark;
 
 /**
