@@ -403,6 +403,14 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
     __test_assert__(false);
 }
 
+void __assert_deep_array_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn) {
+    tprinterr("This feature is not implemented yet.", false);
+}
+
+void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn) {
+    tprinterr("This feature is not implemented yet.", false);
+}
+
 void __assert_not_null(const void *ptr) {
     vbprintf(stderr, "PTR not NULL: %zu != %zu?\n", (size_t) ptr, (size_t) NULL);
     __test_assert__(ptr);

@@ -345,6 +345,44 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
 #define assert_array_not_equals(arr1, arr2, n, size) __gen_assert__(__assert_array_not_equals, arr1, arr2, n, size)
 
 /**
+ * Assert the deep equality of an n-dimensional array (that is, they contain the same items).
+ *
+ * PRE: no pointer is null.
+ * PRE: both arrays contain objects that are the same size.
+ * PRE: both arrays have dimensions that match the specification in ns.
+ *
+ * @param arr1 Pointer to the first array to compare.
+ * @param arr2 Pointer to the second array to compare.
+ * @param ns[] Sizes of each dimension of both arrays.
+ * @param size Sizes of objects in both arrays.
+ * @param argn Number of dimensions in the array.
+ */
+void __assert_deep_array_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn);
+#define assert_deep_array_equals(arr1, arr2, size, ...) {\
+    size_t ns[] = { __VA_ARGS__ };\
+    __assert_deep_array_equals(arr1, arr2, ns, size, sizeof(ns) / sizezof(size_t));\
+}
+
+/**
+ * Assert the deep inequality of an n-dimensional array (that is, they do not contain the same items).
+ *
+ * PRE: no pointer is null.
+ * PRE: both arrays contain objects that are the same size.
+ * PRE: both arrays have dimensions that match the specification in ns.
+ *
+ * @param arr1 Pointer to the first array to compare.
+ * @param arr2 Pointer to the second array to compare.
+ * @param ns[] Sizes of each dimension of both arrays.
+ * @param size Sizes of objects in both arrays.
+ * @param argn Number of dimensions in the array.
+ */
+void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn);
+#define assert_deep_array_not_equals(arr1, arr2, size, ...) {\
+    size_t ns[] = { __VA_ARGS__ };\
+    __assert_deep_array_not_equals(arr1, arr2, ns, size, sizeof(ns) / sizezof(size_t));\
+}
+
+/**
  * Assert that a pointer is not null.
  *
  * @param ptr Pointer to check.
