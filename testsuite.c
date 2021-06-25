@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.3.4
+ * @version   1.4.0
  * @date      2021-06-24
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -17,6 +17,7 @@
 
 #include "testsuite.h"
 
+#include <inttypes.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -147,55 +148,31 @@ void vbprintf(FILE *stream, const char *format, ...) {
 }
 
 // Printing utilities.
-static char *b1 = NULL, *b2 = NULL;
+#define HASH_CONSTANT 524287u
 
-static bool init_b1_b2(size_t size) {
-    // Allocate b1-b2.
-    b1 = (char *) calloc(size + 1, sizeof(char));
-    b2 = (char *) calloc(size + 1, sizeof(char));
+static uint64_t obj_hash(const void *obj, const size_t total_length) {
+    uint64_t result = 0u;
 
-    // Check if allocation successful.
-    if (!(b1 && b2)) {
-        if (b1) {
-            free(b1);
+    if (obj) {
+        result = 1u;
+        uint64_t multiplier = 1u;
+
+        for (size_t i = 0; i < total_length; ++i) {
+            uint8_t cur = ((uint8_t *) obj)[i];
+            result += ((uint64_t) cur) * multiplier;
+
+            multiplier *= HASH_CONSTANT;
         }
-
-        fprintf(stderr, "*** [WARNING] Strings for printing hashes failed to be allocated! ***\n");
-        return false;
     }
 
-    return true;
-}
-
-static void free_b1_b2(void) {
-    if (b1) {
-        free(b1);
-        b1 = NULL;
-    }
-
-    if (b2) {
-        free(b2);
-        b2 = NULL;
-    }
-}
-
-static void obj_hash(const void *obj, char *out_str, const size_t total_length) {
-    // Wrap between 33 (!) and 126 (~).
-    char c = '!';
-    for (size_t i = 0; i < total_length; ++i) {
-        c += ((uint8_t *) obj)[i];
-        c = (c > '~') ? (((c - '!') % ('~' - '!')) + '!') : c;
-        out_str[i] = c;
-    }
+    return result;
 }
 
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
 #ifdef __VERBOSE__
-    if (init_b1_b2(size)) {
-        obj_hash(obj1, b1, size); obj_hash(obj2, b2, size);
-        vbprintf(stderr, format, b1, b2);
-        free_b1_b2();
-    }
+    uint64_t oh1 = obj_hash(obj1, size);
+    uint64_t oh2 = obj_hash(obj2, size);
+    vbprintf(stderr, format, oh1, oh2);
 #endif
 }
 
@@ -397,17 +374,17 @@ void __assert_string_not_equals(const char *str1, const char *str2) {
 }
 
 void __assert_equals(const void *obj1, const void *obj2, const size_t size) {
-    print_obj_hashes("OBJ EQ: %s == %s?\n", b1, b2, size);
+    print_obj_hashes("OBJ EQ: %"PRIx64" == %"PRIx64"?\n", obj1, obj2, size);
     __test_assert__(memcmp(obj1, obj2, size) == 0);
 }
 
 void __assert_not_equals(const void *obj1, const void *obj2, const size_t size) {
-    print_obj_hashes("OBJ NEQ: %s == %s?\n", b1, b2, size);
+    print_obj_hashes("OBJ NEQ: %"PRIx64" == %"PRIx64"?\n", obj1, obj2, size);
     __test_assert__(memcmp(obj1, obj2, size) != 0);
 }
 
 void __assert_array_equals(const void *arr1, const void *arr2, const size_t n, const size_t size) {
-    print_obj_hashes("ARR EQ: %s == %s?\n", b1, b2, n * size);
+    print_obj_hashes("ARR EQ: %"PRIx64" == %"PRIx64"?\n", arr1, arr2, n * size);
 
     for (size_t i = 0; i < n; ++i) {
         __test_assert__(memcmp((uint8_t *) arr1 + (i * size), (uint8_t *) arr2 + (i * size), size) == 0);
@@ -415,7 +392,7 @@ void __assert_array_equals(const void *arr1, const void *arr2, const size_t n, c
 }
 
 void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t n, const size_t size) {
-    print_obj_hashes("ARR NEQ: %s == %s?\n", b1, b2, n * size);
+    print_obj_hashes("ARR NEQ: %"PRIx64" == %"PRIx64"?\n", arr1, arr2, n * size);
 
     for (size_t i = 0; i < n * size; ++i) {
         if (memcmp((uint8_t *) arr1 + i, (uint8_t *) arr2 + i, size) != 0) {
