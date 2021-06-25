@@ -11,3 +11,6 @@ example/testexample
 # Ignore junk from language server nonsense
 .ccls-cache
 
+# Ignore generated documentation
+doc/html/*
+doc/man/*
