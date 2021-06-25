@@ -129,6 +129,7 @@ static void tprinterr(const char* str, const bool passing) {
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
 static char __message[MAX_STR_LEN] = { '\0' };
 static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
+static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
 
 void vbprintf(FILE *stream, const char *format, ...) {
@@ -189,7 +190,7 @@ static void fail_test(void) {
 #define __test_assert__(cond) if (!(cond)) {\
     fprintf(stderr, "\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
             __last_assert_caller_file,\
-            __func__ + 2,\
+            __last_assert_used,\
             __last_assert_caller,\
             __last_line_of_assert_caller,\
             __message\
@@ -201,13 +202,89 @@ static void fail_test(void) {
     }\
 }
 
+// Comparison of arrays function.
+static const void *get_from_flat(const void *arr, const size_t size, const size_t ns[], const size_t argn, const size_t *where) {
+    // Assuming C arrays are in row-major order...
+    size_t offset = 0;
+    size_t mult = 1;
+    for (size_t n = argn - 1; n < argn; --n) {
+        offset += where[n] * mult;
+        mult *= ns[n];
+    }
+
+    return (uint8_t *) arr + (offset * size);
+}
+
+static const void *get_from_ptp(const void *arr, const size_t size, const size_t argn, const size_t *where) {
+    if (argn == 1) {
+        return (uint8_t *) arr + (where[0] * size);
+    } else {
+        return get_from_ptp(*((uint8_t **) arr + where[0]), size, argn - 1, where + 1);
+    }
+}
+
+static const void *get(const void *arr, const bool isptp, const size_t size, const size_t ns[], const size_t argn, const size_t *where) {
+    if (isptp) {
+        return get_from_ptp(arr, size, argn, where);
+    } else {
+        return get_from_flat(arr, size, ns, argn, where);
+    }
+}
+
+typedef bool (*MemoryValidator)(const void *, const void *, const size_t);
+
+static bool memory_is_equals(const void *m1, const void *m2, const size_t n) {
+    return memcmp(m1, m2, n) == 0;
+}
+
+static bool memory_is_not_equals(const void *m1, const void *m2, const size_t n) {
+    return !memory_is_equals(m1, m2, n);
+}
+
+static void add_one(size_t *nums, const size_t ns[], const size_t where, const size_t max) {
+    if (where < max && ++nums[where] >= ns[where]) {
+        nums[where] = 0;
+        add_one(nums, ns, where - 1, max);
+    }
+}
+
+static void compare_arrays(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
+    size_t *current = (size_t *) calloc(argn, sizeof(size_t));
+    if (!current) {
+        fprintf(stderr, "*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
+    }
+
+    size_t total_items = ns[0];
+    for (size_t i = 1; i < argn; ++i) {
+        total_items *= ns[i];
+    }
+
+    for (size_t i = 0; i < total_items; ++i) {
+        const void *i1 = get(arr1, arr1isptp, size, ns, argn, current);
+        const void *i2 = get(arr2, arr2isptp, size, ns, argn, current);
+
+        if (!validator(i1, i2, size)) {
+            free(current);
+            __test_assert__(validator(i1, i2, size));
+        }
+
+        add_one(current, ns, argn - 1, argn);
+    }
+
+    free(current);
+}
+
 // Test runner utilities.
 void __set_last_file(const char *filename) {
-    strcpy(__last_assert_caller_file, filename);
+    strncpy(__last_assert_caller_file, filename, MAX_STR_LEN);
 }
 
 void __set_last_caller(const char *caller) {
-    strcpy(__last_assert_caller, caller);
+    strncpy(__last_assert_caller, caller, MAX_STR_LEN);
+}
+
+void __set_last_assert(const char *assert) {
+    strncpy(__last_assert_used, assert, MAX_STR_LEN);
 }
 
 void __set_last_line(const int line) {
@@ -403,12 +480,14 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
     __test_assert__(false);
 }
 
-void __assert_deep_array_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn) {
-    tprinterr("This feature is not implemented yet.", false);
+void __assert_deep_array_equals(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[]) {
+    vbprintf(stderr, "DEEP ARR EQ: @%zx and @%zx?\n", (size_t) arr1, (size_t) arr2);
+    compare_arrays(arr1, arr2, arr1isptp, arr2isptp, size, argn, ns, memory_is_equals);
 }
 
-void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn) {
-    tprinterr("This feature is not implemented yet.", false);
+void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[]) {
+    vbprintf(stderr, "DEEP ARR NEQ: @%zx and @%zx?\n", (size_t) arr1, (size_t) arr2);
+    compare_arrays(arr1, arr2, arr1isptp, arr2isptp, size, argn, ns, memory_is_not_equals);
 }
 
 void __assert_not_null(const void *ptr) {

@@ -15,6 +15,11 @@ void test_fma_negatives(void) {
     assert_float_equals(my_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
 }
 
+void test_failing(void) {
+    // This is an example of a test that fails on purpose.
+    assert_true(false);
+}
+
 void benchmark_fma(void) {
     for (int i = 0; i < 1000; ++i) {
         float a = 16.5f;
@@ -27,7 +32,8 @@ void benchmark_fma(void) {
 
 static const Test TESTS[] = {
     { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
-    { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" }
+    { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" },
+    { .test = test_failing, .name = "This test will always fail" }
 };
 
 static const Benchmark BENCHMARKS[] = {

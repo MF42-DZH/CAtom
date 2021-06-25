@@ -86,6 +86,13 @@ void __set_last_file(const char *filename);
 void __set_last_caller(const char *caller);
 
 /**
+ * Set the last name of used assert.
+ *
+ * @param assert Name of last used assert.
+ */
+void __set_last_assert(const char *assert);
+
+/**
  * Set the last line where an assert was used.
  *
  * @param line Line where assert was called.
@@ -167,6 +174,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
     __set_last_file(__FILE__);\
     __set_last_caller(__func__);\
     __set_last_line(__LINE__);\
+    __set_last_assert(#name);\
     name(__VA_ARGS__);\
 }
 
@@ -350,17 +358,20 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.
  * PRE: both arrays have dimensions that match the specification in ns.
+ * PRE: both arrays are either flat n-dimensional arrays (arr[][][]...) or pointers to pointers (arr***...).
  *
- * @param arr1 Pointer to the first array to compare.
- * @param arr2 Pointer to the second array to compare.
- * @param ns[] Sizes of each dimension of both arrays.
- * @param size Sizes of objects in both arrays.
- * @param argn Number of dimensions in the array.
+ * @param arr1      Pointer to the first array to compare.
+ * @param arr2      Pointer to the second array to compare.
+ * @param arr1isptp Is the first array a pointer-to-pointer array?
+ * @param arr2isptp Is the second array a pointer-to-pointer array?
+ * @param size      Sizes of objects in both arrays.
+ * @param argn      Number of dimensions in the array.
+ * @param ns[]      Sizes of each dimension of both arrays.
  */
-void __assert_deep_array_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn);
-#define assert_deep_array_equals(arr1, arr2, size, ...) {\
+void __assert_deep_array_equals(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[]);
+#define assert_deep_array_equals(arr1, arr2, arr1isptp, arr2isptp, size, ...) {\
     size_t ns[] = { __VA_ARGS__ };\
-    __assert_deep_array_equals(arr1, arr2, ns, size, sizeof(ns) / sizezof(size_t));\
+    __gen_assert__(__assert_deep_array_equals, arr1, arr2, arr1isptp, arr2isptp, size, sizeof(ns) / sizeof(size_t), ns);\
 }
 
 /**
@@ -369,17 +380,20 @@ void __assert_deep_array_equals(const void *arr1, const void *arr2, const size_t
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.
  * PRE: both arrays have dimensions that match the specification in ns.
+ * PRE: both arrays are either flat n-dimensional arrays (arr[][][]...) or pointers to pointers (arr***...).
  *
- * @param arr1 Pointer to the first array to compare.
- * @param arr2 Pointer to the second array to compare.
- * @param ns[] Sizes of each dimension of both arrays.
- * @param size Sizes of objects in both arrays.
- * @param argn Number of dimensions in the array.
+ * @param arr1      Pointer to the first array to compare.
+ * @param arr2      Pointer to the second array to compare.
+ * @param arr1isptp Is the first array a pointer-to-pointer array?
+ * @param arr2isptp Is the second array a pointer-to-pointer array?
+ * @param size      Sizes of objects in both arrays.
+ * @param argn      Number of dimensions in the array.
+ * @param ns[]      Sizes of each dimension of both arrays.
  */
-void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const size_t ns[], const size_t size, const size_t argn);
-#define assert_deep_array_not_equals(arr1, arr2, size, ...) {\
+void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[]);
+#define assert_deep_array_not_equals(arr1, arr2, arr1isptp, arr2isptp, size, ...) {\
     size_t ns[] = { __VA_ARGS__ };\
-    __assert_deep_array_not_equals(arr1, arr2, ns, size, sizeof(ns) / sizezof(size_t));\
+    __gen_assert__(__assert_deep_array_not_equals, arr1, arr2, arr1isptp, arr2isptp, size, sizeof(ns) / sizeof(size_t), ns);\
 }
 
 /**
