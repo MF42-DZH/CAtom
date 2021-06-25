@@ -60,6 +60,11 @@ void test_fma_negatives(void) {
     assert_float_equals(my_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
 }
 
+void test_failing(void) {
+    // This is an example of a test that fails on purpose.
+    assert_true(false);
+}
+
 void benchmark_fma(void) {
     for (int i = 0; i < 1000; ++i) {
         float a = 16.5f;
@@ -72,7 +77,8 @@ void benchmark_fma(void) {
 
 static const Test TESTS[] = {
     { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
-    { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" }
+    { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" },
+    { .test = test_failing, .name = "This test will always fail" }
 };
 
 static const Benchmark BENCHMARKS[] = {
@@ -130,21 +136,30 @@ For this example above, expect the following output or similar:
 ```
 --- TESTS: testexample.c ---
 
-Running 2 tests.
+Running 3 tests.
 
 --------------------------------------------------------------------------------
-[1 / 2] Running test "Test if fma returns correct results":
+[1 / 3] Running test "Test if fma returns correct results":
 
-Test passed. "Test if fma returns correct results" terminated in 0.000029 seconds.
+Test passed. "Test if fma returns correct results" terminated in 0.000059 seconds.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
-[2 / 2] Running test "Test if fma correctly handles negatives":
+[2 / 3] Running test "Test if fma correctly handles negatives":
 
-Test passed. "Test if fma correctly handles negatives" terminated in 0.000009 seconds.
+Test passed. "Test if fma correctly handles negatives" terminated in 0.000039 seconds.
 --------------------------------------------------------------------------------
 
-Tests completed in 0.000067 seconds with 2 / 2 passed (0 failed).
+--------------------------------------------------------------------------------
+[3 / 3] Running test "This test will always fail":
+
+[testexample.c] Assertion Failed. __assert_true failed in test_failing at line 20:
+BOOL is TRUE: 0?
+
+Test failed. "This test will always fail" terminated in 0.000018 seconds.
+--------------------------------------------------------------------------------
+
+Tests completed in 0.000214 seconds with 2 / 3 passed (1 failed).
 
 --- BENCHMARKS: testexample.c ---
 
@@ -153,26 +168,24 @@ Running 1 benchmark.
 --------------------------------------------------------------------------------
 [1 / 1] Running benchmark "Performance check for fma":
 
-Running warmup iteration 1 / 5. Finished warmup iteration 1 / 5 in 0.000008 seconds.
-Running warmup iteration 2 / 5. Finished warmup iteration 2 / 5 in 0.000007 seconds.
-Running warmup iteration 3 / 5. Finished warmup iteration 3 / 5 in 0.000007 seconds.
-Running warmup iteration 4 / 5. Finished warmup iteration 4 / 5 in 0.000008 seconds.
-Running warmup iteration 5 / 5. Finished warmup iteration 5 / 5 in 0.000007 seconds.
-Running benchmark iteration 1 / 5. Finished benchmark iteration 1 / 5 in 0.000007 seconds.
-Running benchmark iteration 2 / 5. Finished benchmark iteration 2 / 5 in 0.000008 seconds.
-Running benchmark iteration 3 / 5. Finished benchmark iteration 3 / 5 in 0.000007 seconds.
-Running benchmark iteration 4 / 5. Finished benchmark iteration 4 / 5 in 0.000007 seconds.
-Running benchmark iteration 5 / 5. Finished benchmark iteration 5 / 5 in 0.000008 seconds.
+Running warmup iteration 1 / 5. Finished warmup iteration 1 / 5 in 0.000007 seconds.
+Running warmup iteration 2 / 5. Finished warmup iteration 2 / 5 in 0.000006 seconds.
+Running warmup iteration 3 / 5. Finished warmup iteration 3 / 5 in 0.000006 seconds.
+Running warmup iteration 4 / 5. Finished warmup iteration 4 / 5 in 0.000005 seconds.
+Running warmup iteration 5 / 5. Finished warmup iteration 5 / 5 in 0.000006 seconds.
+Running benchmark iteration 1 / 5. Finished benchmark iteration 1 / 5 in 0.000006 seconds.
+Running benchmark iteration 2 / 5. Finished benchmark iteration 2 / 5 in 0.000007 seconds.
+Running benchmark iteration 3 / 5. Finished benchmark iteration 3 / 5 in 0.000006 seconds.
+Running benchmark iteration 4 / 5. Finished benchmark iteration 4 / 5 in 0.000006 seconds.
+Running benchmark iteration 5 / 5. Finished benchmark iteration 5 / 5 in 0.000006 seconds.
 
 Benchmark complete.
-"Performance check for fma" finished 5 iterations (and 5 warmup iterations) in 0.000037 seconds (0.000074 seconds with warmup).
-It took 0.000007 seconds on average to run (0.000007 seconds average with warmup).
+"Performance check for fma" finished 5 iterations (and 5 warmup iterations) in 0.000031 seconds (0.000061 seconds with warmup).
+It took 0.000006 seconds on average to run (0.000006 seconds average with warmup).
 --------------------------------------------------------------------------------
 
-Benchmarks completed in 0.000074 seconds.
+Benchmarks completed in 0.000061 seconds.
 ```
-
-For more information on available asserts and compile flags, please look at `testsuite.h`.
 
 ## Notes
 
