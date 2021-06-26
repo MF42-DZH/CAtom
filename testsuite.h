@@ -178,7 +178,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
     __set_last_file(__FILE__);\
     __set_last_caller(__func__);\
     __set_last_line(__LINE__);\
-    __set_last_assert(#name);\
+    __set_last_assert(#name + 2);\
     name(__VA_ARGS__);\
 }
 

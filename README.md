@@ -153,7 +153,7 @@ Test passed. "Test if fma correctly handles negatives" terminated in 0.000039 se
 --------------------------------------------------------------------------------
 [3 / 3] Running test "This test will always fail":
 
-[testexample.c] Assertion Failed. __assert_true failed in test_failing at line 20:
+[testexample.c] Assertion Failed. assert_true failed in test_failing at line 20:
 BOOL is TRUE: 0?
 
 Test failed. "This test will always fail" terminated in 0.000018 seconds.
