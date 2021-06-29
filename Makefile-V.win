@@ -6,7 +6,7 @@ BUILD   = $(LIB)
 
 .SUFFIXES: .c .o
 
-.PHONY: all clean rebuild
+.PHONY: all docs clean clean_docs rebuild remake_docs
 
 all: $(BUILD)
 
@@ -14,6 +14,15 @@ rebuild: clean all
 
 clean:
 	DEL /F $(BUILD) *.o
+
+docs:
+	+$(MAKE) -C doc
+
+remake_docs:
+	+$(MAKE) remake -C doc
+
+clean_docs:
+	+$(MAKE) clean -C doc
 
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)

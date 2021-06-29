@@ -10,16 +10,16 @@ BUILD   = $(LIB)
 
 all: $(BUILD)
 
-docs:
-	+$(MAKE) -C doc
-
 rebuild: clean all
-
-remake_docs:
-	+$(MAKE) remake -C doc
 
 clean:
 	rm -f $(BUILD) *.o
+
+docs:
+	+$(MAKE) -C doc
+
+remake_docs:
+	+$(MAKE) remake -C doc
 
 clean_docs:
 	+$(MAKE) clean -C doc
