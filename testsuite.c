@@ -2,8 +2,8 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.4.1
- * @date      2021-06-26
+ * @version   1.4.2
+ * @date      2021-06-29
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -291,13 +291,13 @@ void __set_last_line(const int line) {
     __last_line_of_assert_caller = line;
 }
 
-void __run_test(const Test test) {
-    fprintf(stderr, "Running test \"%s\":\n", test.name);
+void __run_test(const Test *test) {
+    fprintf(stderr, "Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
 
     if (setjmp(env) == 0) {
-        test.test();
+        test->test();
         tprinterr("\nTest passed. ", true);
     } else {
         tprinterr("\nTest failed. ", false);
@@ -306,14 +306,14 @@ void __run_test(const Test test) {
     time = clock() - time;
 
     fprintf(stderr, "\"%s\" terminated in %f seconds.\n",
-        test.name, (double) time / CLOCKS_PER_SEC
+        test->name, (double) time / CLOCKS_PER_SEC
     );
 }
 
-clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times) {
+clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times) {
     in_benchmark = true;
 
-    fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark.name);
+    fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark->name);
 
     clock_t total_time = 0;
     clock_t with_wm = 0;
@@ -326,7 +326,7 @@ clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const si
         }
 
         clock_t time_taken = clock();
-        benchmark.benchmark();
+        benchmark->benchmark();
         time_taken = clock() - time_taken;
 
         if (i >= warmup) {
@@ -342,7 +342,7 @@ clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const si
     in_benchmark = false;
 
     fprintf(stderr, "\nBenchmark complete.\n\"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup).\nIt took %f seconds on average to run (%f seconds average with warmup).\n",
-        benchmark.name,
+        benchmark->name,
         times,
         warmup,
         (double) total_time / CLOCKS_PER_SEC,
@@ -362,7 +362,7 @@ void __run_tests(const Test tests[], const size_t n) {
 
     for (size_t i = 0; i < n; ++i) {
         fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
-        __run_test(tests[i]);
+        __run_test(tests + i);
         fprintf(stderr, "%s\n\n", SEP);
     }
 
@@ -378,7 +378,7 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
 
     for (size_t i = 0; i < n; ++i) {
         fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
-        total += __run_benchmark(benchmarks[i], warmup, times);
+        total += __run_benchmark(benchmarks + i, warmup, times);
         fprintf(stderr, "%s\n\n", SEP);
     }
 

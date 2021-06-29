@@ -2,8 +2,8 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.4.1
- * @date      2021-06-26
+ * @version   1.4.2
+ * @date      2021-06-29
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -122,7 +122,7 @@ typedef struct {
  *
  * @param test Test to run.
  */
-void __run_test(const Test test);
+void __run_test(const Test *test);
 
 /**
  * Run a single benchmark 'times' amount of times.
@@ -134,7 +134,7 @@ void __run_test(const Test test);
  * @param  times     Number of real iterations for benchmark.
  * @return           Time duration of benchmark (all iterations + warmup iterations).
  */
-clock_t __run_benchmark(const Benchmark benchmark, const size_t warmup, const size_t times);
+clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times);
 
 /**
  * Run an array of tests.
