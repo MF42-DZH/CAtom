@@ -1,0 +1,14 @@
+.PHONY: all clean remake
+
+all: html man
+
+clean:
+	RMDIR /S /Q .\html .\man
+
+html:
+	doxygen
+
+man:
+	doxygen
+
+remake: clean all
