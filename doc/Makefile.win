@@ -3,7 +3,8 @@
 all: html man
 
 clean:
-	RMDIR /S /Q .\html .\man
+	RMDIR /S /Q .\html
+	RMDIR /S /Q .\man
 
 html:
 	doxygen
