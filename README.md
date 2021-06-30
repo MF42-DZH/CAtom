@@ -187,6 +187,10 @@ It took 0.000006 seconds on average to run (0.000006 seconds average with warmup
 Benchmarks completed in 0.000061 seconds.
 ```
 
+## Documentation
+
+Documentation is available in the `doc` folder. You can manually generate it with doxygen, or use the makefile to call doxygen for you. The makefile also contains cleaning commands to clear out the created documentation.
+
 ## Notes
 
 * Do not memory allocate inside a test unless you are freeing it before an assertion. The test suite *will* leak memory if the assertion fails.
