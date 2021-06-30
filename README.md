@@ -25,7 +25,7 @@ Example shown in the `example` directory:
 #ifndef __EXAMPLE_H__
 #define __EXAMPLE_H__
 
-float my_fma(float a, float b, float c);
+float exm_fma(float a, float b, float c);
 
 #endif
 ```
@@ -35,7 +35,7 @@ float my_fma(float a, float b, float c);
 ```c
 #include "example.h"
 
-float my_fma(float a, float b, float c) {
+float exm_fma(float a, float b, float c) {
     return a * b + c;
 }
 ```
@@ -47,17 +47,17 @@ float my_fma(float a, float b, float c) {
 #include "example.h"
 
 void test_fma_correct_result(void) {
-    assert_float_equals(my_fma(1.0f, 1.0f, 0.0f), 1.0f, 0.001f);
-    assert_float_equals(my_fma(2.0f, 3.0f, 4.0f), 10.0f, 0.001f);
-    assert_float_equals(my_fma(8.0f, 1.5f, 2.5f), 14.5f, 0.001f);
+    assert_float_equals(exm_fma(1.0f, 1.0f, 0.0f), 1.0f, 0.001f);
+    assert_float_equals(exm_fma(2.0f, 3.0f, 4.0f), 10.0f, 0.001f);
+    assert_float_equals(exm_fma(8.0f, 1.5f, 2.5f), 14.5f, 0.001f);
 }
 
 void test_fma_negatives(void) {
-    assert_float_equals(my_fma(-1.0f, 1.0f, 0.0f), -1.0f, 0.001f);
-    assert_float_equals(my_fma(1.0f, -1.0f, 0.0f), -1.0f, 0.001f);
-    assert_float_equals(my_fma(-1.0f, -1.0f, 0.0f), 1.0f, 0.001f);
-    assert_float_equals(my_fma(-1.0f, -1.0f, -1.0f), 0.0f, 0.001f);
-    assert_float_equals(my_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
+    assert_float_equals(exm_fma(-1.0f, 1.0f, 0.0f), -1.0f, 0.001f);
+    assert_float_equals(exm_fma(1.0f, -1.0f, 0.0f), -1.0f, 0.001f);
+    assert_float_equals(exm_fma(-1.0f, -1.0f, 0.0f), 1.0f, 0.001f);
+    assert_float_equals(exm_fma(-1.0f, -1.0f, -1.0f), 0.0f, 0.001f);
+    assert_float_equals(exm_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
 }
 
 void test_failing(void) {
@@ -71,7 +71,7 @@ void benchmark_fma(void) {
         float b = 18.5f;
         float c = 2.0f;
 
-        float t = my_fma(a, b, c);
+        float t = exm_fma(a, b, c);
     }
 }
 
@@ -195,3 +195,4 @@ Benchmarks completed in 0.000061 seconds.
 * You must compile this test suite and any test sources with at least the `-g` flag and no optimisation flags (alternatively `-Og`) to get useful results.
 * On Windows, use `Makefile.win` instead of the normal `Makefile`.
 * Use the `-V` makefiles to use the verbose test suite. Useful for debugging when asserts occur.
+* You may get a warning from your linter that adding an int to a string does not concatenate them when you're using the assert macros. Feel free to ignore that warning.
