@@ -489,12 +489,12 @@ void __assert_string_not_equals(const char *str1, const char *str2) {
 }
 
 void __assert_wide_string_equals(const wchar_t *str1, const wchar_t *str2) {
-    vbwprintf(stderr, L"WIDE STRING EQ: \"%s\" == \"%s\"?\n", str1, str2);
+    vbwprintf(stderr, L"WIDE STRING EQ: \"%ls\" == \"%ls\"?\n", str1, str2);
     __test_assert__(wcscmp(str1, str2) == 0);
 }
 
 void __assert_wide_string_not_equals(const wchar_t *str1, const wchar_t *str2) {
-    vbwprintf(stderr, L"WIDE STRING NEQ: \"%s\" != \"%s\"?\n", str1, str2);
+    vbwprintf(stderr, L"WIDE STRING NEQ: \"%ls\" != \"%ls\"?\n", str1, str2);
     __test_assert__(wcscmp(str1, str2) != 0);
 }
 
