@@ -2,8 +2,8 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CUnit: A simple C test suite, inspired by JUnit.
- * @version   1.4.3
- * @date      2021-06-29
+ * @version   1.5.0
+ * @date      2021-07-01
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -127,7 +127,17 @@ static void tprinterr(const char* str, const bool passing) {
 
 // Helper for assertion failure message printer.
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
-static char __message[MAX_STR_LEN] = { '\0' };
+
+// Struct holding the last message recorded.
+static struct {
+    enum { NARROW, WIDE } width;
+
+    union {
+        char __message[MAX_STR_LEN];
+        wchar_t __wessage[MAX_STR_LEN];
+    } __msg;
+} Message;
+
 static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
 static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
@@ -138,10 +148,28 @@ void vbprintf(FILE *stream, const char *format, ...) {
     va_start(args, format);
     va_copy(argcopy, args);
 
-    vsnprintf(__message, MAX_STR_LEN, format, args);
+    vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
+    Message.width = NARROW;
 
 #ifdef __VERBOSE__
     vfprintf(stream, format, argcopy);
+#endif
+
+    va_end(args);
+    va_end(argcopy);
+}
+
+void vbwprintf(FILE *stream, const wchar_t *format, ...) {
+    va_list args, argcopy;
+
+    va_start(args, format);
+    va_copy(argcopy, args);
+
+    vswprintf(Message.__msg.__wessage, MAX_STR_LEN, format, args);
+    Message.width = WIDE;
+
+#ifdef __VERBOSE__
+    vfwprintf(stream, format, argcopy);
 #endif
 
     va_end(args);
@@ -188,13 +216,23 @@ static void fail_test(void) {
 }
 
 #define __test_assert__(cond) if (!(cond)) {\
-    fprintf(stderr, "\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
-            __last_assert_caller_file,\
-            __last_assert_used,\
-            __last_assert_caller,\
-            __last_line_of_assert_caller,\
-            __message\
-    );\
+    if (Message.width == NARROW) {\
+        fprintf(stderr, "\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
+                __last_assert_caller_file,\
+                __last_assert_used,\
+                __last_assert_caller,\
+                __last_line_of_assert_caller,\
+                Message.__msg.__message\
+        );\
+    } else {\
+        fwprintf(stderr, L"\n[%s] Assertion Failed. %s failed in %s at line %d:\n%ls",\
+                __last_assert_caller_file,\
+                __last_assert_used,\
+                __last_assert_caller,\
+                __last_line_of_assert_caller,\
+                Message.__msg.__wessage\
+        );\
+    }\
     if (!in_benchmark) {\
         fail_test();\
     } else {\
@@ -448,6 +486,16 @@ void __assert_string_equals(const char *str1, const char *str2) {
 void __assert_string_not_equals(const char *str1, const char *str2) {
     vbprintf(stderr, "STRING NEQ: \"%s\" != \"%s\"?\n", str1, str2);
     __test_assert__(strcmp(str1, str2) != 0);
+}
+
+void __assert_wide_string_equals(const wchar_t *str1, const wchar_t *str2) {
+    vbwprintf(stderr, L"WIDE STRING EQ: \"%s\" == \"%s\"?\n", str1, str2);
+    __test_assert__(wcscmp(str1, str2) == 0);
+}
+
+void __assert_wide_string_not_equals(const wchar_t *str1, const wchar_t *str2) {
+    vbwprintf(stderr, L"WIDE STRING NEQ: \"%s\" != \"%s\"?\n", str1, str2);
+    __test_assert__(wcscmp(str1, str2) != 0);
 }
 
 void __assert_equals(const void *obj1, const void *obj2, const size_t size) {
