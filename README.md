@@ -1,4 +1,4 @@
-# CAtom
+![CAtom](https://raw.githubusercontent.com/0xFC963F18DC21/CAtom/master/doc/CABanner.png)
 
 This is a simple test suite for running unit tests on C code.
 
