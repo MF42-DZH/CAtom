@@ -1,13 +1,13 @@
 /**
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
- * @brief     CUnit: A simple C test suite, inspired by JUnit.
+ * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.5.0
  * @date      2021-07-01
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
- * This is CUnit. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
+ * This is CAtom. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
  * and (limited) integration testing on simple functions and pieces of data.
  *
  * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing.
