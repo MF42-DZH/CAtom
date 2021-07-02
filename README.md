@@ -5,7 +5,7 @@ This is a simple test suite for running unit tests on C code.
 ## Quick Start
 
 <ol start="0">
-    <li>Clone this test suite into your project. If your project is also a git repository, add <code>CUnit/*</code> To your <code>.gitignore</code> first.</li>
+    <li>Clone this test suite into your project. If your project is also a git repository, add <code>CAtom/*</code> To your <code>.gitignore</code> first.</li>
     <li>Build this test suite. A simple <code>make</code> is enough to do so.</li>
     <li>Include <code>testsuite.h</code> in the test source code that is calling this test suite.</li>
     <li>Create some test functions that match the signature <code>void (*TestFunction)(void)</code>.</li>
