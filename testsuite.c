@@ -2,8 +2,8 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.5.0
- * @date      2021-07-01
+ * @version   1.5.1
+ * @date      2021-07-02
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -42,6 +42,13 @@ static DWORD __stderr_mode__ = 0;
 
 static bool stderr_isatty(void) {
     HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+
+    if (!stderr_handle) {
+        // stderr does not exist.
+        return false;
+    }
+
+    // Get the file type of stderr.
     DWORD typeof_stderr = GetFileType(stderr_handle);
 
     if (typeof_stderr == FILE_TYPE_CHAR) {

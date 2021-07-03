@@ -2,8 +2,8 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.5.0
- * @date      2021-07-01
+ * @version   1.5.1
+ * @date      2021-07-02
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
