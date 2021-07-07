@@ -2,7 +2,7 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.6.0
+ * @version   1.6.2
  * @date      2021-07-07
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -155,13 +155,12 @@ void vbprintf(FILE *stream, const char *format, ...) {
     va_start(args, format);
     va_copy(argcopy, args);
 
-    wchar_t wide_format[MAX_STR_LEN];
-    swprintf(wide_format, MAX_STR_LEN, L"%s", format);
-
     vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
     Message.width = NARROW;
 
 #ifdef __VERBOSE__
+    wchar_t wide_format[MAX_STR_LEN];
+    swprintf(wide_format, MAX_STR_LEN, L"%s", format);
     vfwprintf(stream, wide_format, argcopy);
 #endif
 
