@@ -46,6 +46,7 @@
 #ifndef __TESTSUITE_H__
 #define __TESTSUITE_H__
 
+#include <locale.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -146,7 +147,8 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
  */
 void __run_tests(Test tests[], const size_t n);
 #define run_tests(tests, n) {\
-    fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
+    setlocale(LC_ALL, "");\
+    fwprintf(stderr, L"--- TESTS: %s ---\n\n", __FILE__);\
     __run_tests(tests, n);\
 }
 
@@ -160,7 +162,8 @@ void __run_tests(Test tests[], const size_t n);
  */
 void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times);
 #define run_benchmarks(benchmarks, n, warmup, times) {\
-    fprintf(stderr, "--- BENCHMARKS: %s ---\n\n", __FILE__);\
+    setlocale(LC_ALL, "");\
+    fwprintf(stderr, L"--- BENCHMARKS: %s ---\n\n", __FILE__);\
     __run_benchmarks(benchmarks, n, warmup, times);\
 }
 
