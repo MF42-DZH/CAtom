@@ -30,8 +30,8 @@
 // Helper for printing coloured text for testing.
 static void tprinterr(const char* str, const bool passing);
 
-static const char *PASSING = "\x1b[32;1m%s\x1b[0m";
-static const char *FAILING = "\x1b[31;1m%s\x1b[0m";
+static const wchar_t *PASSING = L"\x1b[32;1m%s\x1b[0m";
+static const wchar_t *FAILING = L"\x1b[31;1m%s\x1b[0m";
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
@@ -100,22 +100,22 @@ static void tprinterr(const char* str, const bool passing) {
     if (istty) {
         if (__stderr_mode__ & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
             // Use ASCII escapes; console has VT-compat.
-            fprintf(stderr, passing ? PASSING : FAILING, str);
+            fwprintf(stderr, passing ? PASSING : FAILING, str);
         } else {
             // Get current console colour or default.
             WORD colour = DEFAULT_ATTR;
             if (!get_console_colour(__stderr_handle__, &colour)) {
-                fprintf(stderr, "*** [WARNING] STDERR attribute fetching failed! ***\n");
+                fwprintf(stderr, L"*** [WARNING] STDERR attribute fetching failed! ***\n");
             }
 
             // Legacy handling, using text attributes.
             SetConsoleTextAttribute(__stderr_handle__, passing ? PASSING_ATTR : FAILING_ATTR);
-            fprintf(stderr, "%s", str);
+            fwprintf(stderr, L"%s", str);
             SetConsoleTextAttribute(__stderr_handle__, colour);
         }
     } else {
         // No colour.
-        fprintf(stderr, "%s", str);
+        fwprintf(stderr, L"%s", str);
     }
 }
 #else
@@ -124,10 +124,10 @@ static void tprinterr(const char* str, const bool passing) {
 static void tprinterr(const char* str, const bool passing) {
     if (isatty(fileno(stderr))) {
         // Use ASCII escapes.
-        fprintf(stderr, passing ? PASSING : FAILING, str);
+        fwprintf(stderr, passing ? PASSING : FAILING, str);
     } else {
         // No colour.
-        fprintf(stderr, "%s", str);
+        fwprintf(stderr, L"%s", str);
     }
 }
 #endif
@@ -155,11 +155,14 @@ void vbprintf(FILE *stream, const char *format, ...) {
     va_start(args, format);
     va_copy(argcopy, args);
 
+    wchar_t wide_format[MAX_STR_LEN];
+    swprintf(wide_format, MAX_STR_LEN, L"%s", format);
+
     vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
     Message.width = NARROW;
 
 #ifdef __VERBOSE__
-    vfprintf(stream, format, argcopy);
+    vfwprintf(stream, wide_format, argcopy);
 #endif
 
     va_end(args);
@@ -224,7 +227,7 @@ static void fail_test(void) {
 
 #define __test_assert__(cond) if (!(cond)) {\
     if (Message.width == NARROW) {\
-        fprintf(stderr, "\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
+        fwprintf(stderr, L"\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
                 __last_assert_caller_file,\
                 __last_assert_used,\
                 __last_assert_caller,\
@@ -243,7 +246,7 @@ static void fail_test(void) {
     if (!in_benchmark) {\
         fail_test();\
     } else {\
-        fprintf(stderr, "\n*** [WARNING] Do not use asserts inside a benchmark! ***\n");\
+        fwprintf(stderr, L"\n*** [WARNING] Do not use asserts inside a benchmark! ***\n");\
     }\
 }
 
@@ -296,7 +299,7 @@ static void add_one(size_t *nums, const size_t ns[], const size_t where, const s
 static void compare_arrays(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
     size_t *current = (size_t *) calloc(argn, sizeof(size_t));
     if (!current) {
-        fprintf(stderr, "*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
+        fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
     }
 
     size_t total_items = ns[0];
@@ -337,7 +340,7 @@ void __set_last_line(const int line) {
 }
 
 void __run_test(Test *test) {
-    fprintf(stderr, "Running test \"%s\":\n", test->name);
+    fwprintf(stderr, L"Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
 
@@ -352,7 +355,7 @@ void __run_test(Test *test) {
 
     time = clock() - time;
 
-    fprintf(stderr, "\"%s\" terminated in %f seconds.\n",
+    fwprintf(stderr, L"\"%s\" terminated in %f seconds.\n",
         test->name, (double) time / CLOCKS_PER_SEC
     );
 }
@@ -360,16 +363,16 @@ void __run_test(Test *test) {
 clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times) {
     in_benchmark = true;
 
-    fprintf(stderr, "Running benchmark \"%s\":\n\n", benchmark->name);
+    fwprintf(stderr, L"Running benchmark \"%s\":\n\n", benchmark->name);
 
     clock_t total_time = 0;
     clock_t with_wm = 0;
 
     for (size_t i = 0; i < warmup + times; ++i) {
         if (i < warmup) {
-            fprintf(stderr, "Running warmup iteration %zu / %zu. ", i + 1, warmup);
+            fwprintf(stderr, L"Running warmup iteration %zu / %zu. ", i + 1, warmup);
         } else {
-            fprintf(stderr, "Running benchmark iteration %zu / %zu. ", i - warmup + 1, times);
+            fwprintf(stderr, L"Running benchmark iteration %zu / %zu. ", i - warmup + 1, times);
         }
 
         clock_t time_taken = clock();
@@ -378,9 +381,9 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
 
         if (i >= warmup) {
             total_time += time_taken;
-            fprintf(stderr, "Finished benchmark iteration %zu / %zu in %f seconds.\n", i - warmup + 1, times, (double) time_taken / CLOCKS_PER_SEC);
+            fwprintf(stderr, L"Finished benchmark iteration %zu / %zu in %f seconds.\n", i - warmup + 1, times, (double) time_taken / CLOCKS_PER_SEC);
         } else {
-            fprintf(stderr, "Finished warmup iteration %zu / %zu in %f seconds.\n", i + 1, warmup, (double) time_taken / CLOCKS_PER_SEC);
+            fwprintf(stderr, L"Finished warmup iteration %zu / %zu in %f seconds.\n", i + 1, warmup, (double) time_taken / CLOCKS_PER_SEC);
         }
 
         with_wm += time_taken;
@@ -388,7 +391,7 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
 
     in_benchmark = false;
 
-    fprintf(stderr, "\nBenchmark complete.\n\"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup).\nIt took %f seconds on average to run (%f seconds average with warmup).\n",
+    fwprintf(stderr, L"\nBenchmark complete.\n\"%s\" finished %zu iterations (and %zu warmup iterations) in %f seconds (%f seconds with warmup).\nIt took %f seconds on average to run (%f seconds average with warmup).\n",
         benchmark->name,
         times,
         warmup,
@@ -404,34 +407,34 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
 void __run_tests(Test tests[], const size_t n) {
     failures = 0;
 
-    fprintf(stderr, "Running %zu test%s.\n\n", n, n != 1 ? "s" : "");
+    fwprintf(stderr, L"Running %zu test%s.\n\n", n, n != 1 ? "s" : "");
 
     clock_t time;
     time = clock();
 
     for (size_t i = 0; i < n; ++i) {
-        fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
+        fwprintf(stderr, L"%s\n[%zu / %zu] ", SEP, i + 1u, n);
         __run_test(tests + i);
-        fprintf(stderr, "%s\n\n", SEP);
+        fwprintf(stderr, L"%s\n\n", SEP);
     }
 
     time = clock() - time;
 
-    fprintf(stderr, "Tests completed in %f seconds with %zu / %zu passed (%zu failed).\n\n", (double) time / CLOCKS_PER_SEC, n - failures, n, failures);
+    fwprintf(stderr, L"Tests completed in %f seconds with %zu / %zu passed (%zu failed).\n\n", (double) time / CLOCKS_PER_SEC, n - failures, n, failures);
 }
 
 void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t warmup, const size_t times) {
-    fprintf(stderr, "Running %zu benchmark%s.\n\n", n, n != 1 ? "s" : "");
+    fwprintf(stderr, L"Running %zu benchmark%s.\n\n", n, n != 1 ? "s" : "");
 
     clock_t total = 0;
 
     for (size_t i = 0; i < n; ++i) {
-        fprintf(stderr, "%s\n[%zu / %zu] ", SEP, i + 1u, n);
+        fwprintf(stderr, L"%s\n[%zu / %zu] ", SEP, i + 1u, n);
         total += __run_benchmark(benchmarks + i, warmup, times);
-        fprintf(stderr, "%s\n\n", SEP);
+        fwprintf(stderr, L"%s\n\n", SEP);
     }
 
-    fprintf(stderr, "Benchmarks completed in %f seconds.\n\n", (double) total / CLOCKS_PER_SEC);
+    fwprintf(stderr, L"Benchmarks completed in %f seconds.\n\n", (double) total / CLOCKS_PER_SEC);
 }
 
 size_t count_failures(const Test tests[], const size_t n) {
