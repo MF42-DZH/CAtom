@@ -9,11 +9,11 @@ This is a simple test suite for running unit tests on C code.
     <li>Build this test suite. A simple <code>make</code> is enough to do so.</li>
     <li>Include <code>testsuite.h</code> in the test source code that is calling this test suite.</li>
     <li>Create some test functions that match the signature <code>void (*TestFunction)(void)</code>.</li>
-    <li>Create a <code>static constant</code> array of <code>Test</code> structs at the global level in your test source.</li>
+    <li>Create a <code>static</code> array of <code>Test</code> structs at the global level in your test source.</li>
     <li>Call <code>run_tests</code> using that array of <code>Test</code> structs in <code>main</code>.</li>
     <li>When building the test sources, link <code>libtestsuite.a</code> from this folder.</li>
     <li>Simply run your test code in order to run the tests.</li>
-    <li>Repeat steps 4-6 using the <code>void (*BenchmarkFunction)(void)</code> signature, the <code>Benchmark</code> struct and the <code>run_benchmarks</code> function to run a set of benchmarks.</li>
+    <li>Repeat steps 4-6 using the <code>void (*BenchmarkFunction)(void)</code> signature, the <code>Benchmark</code> struct and the <code>run_benchmarks</code> function to run a set of benchmarks. You can use a <code>static const</code> array of benchmarks.</li>
 </ol>
 
 ### Example
@@ -75,7 +75,7 @@ void benchmark_fma(void) {
     }
 }
 
-static const Test TESTS[] = {
+static Test TESTS[] = {
     { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
     { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" },
     { .test = test_failing, .name = "This test will always fail" }
@@ -88,7 +88,10 @@ static const Benchmark BENCHMARKS[] = {
 int main(void) {
     run_tests(TESTS, sizeof(TESTS) / sizeof(Test));
     run_benchmarks(BENCHMARKS, sizeof(BENCHMARKS) / sizeof(Benchmark), 5, 5);
-    return 0;
+
+    // The -1 in this example is to compensate for the fact that 1 test always fails.
+    // You will not need the -1 in your test files.
+    return count_failures(TESTS, sizeof(TESTS) / sizeof(Test)) - 1;
 }
 ```
 

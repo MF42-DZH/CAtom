@@ -2,8 +2,8 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.5.1
- * @date      2021-07-02
+ * @version   1.6.0
+ * @date      2021-07-07
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -21,7 +21,7 @@
  * User guide:
  * - Create a series of test functions (preferably prefixed with test_), that conform to the TestFunction
  *   function pointer type.
- * - Create a static const array of Test structs, which hold a pointer to the test to run, and a user-friendly
+ * - Create a static array of Test structs, which hold a pointer to the test to run, and a user-friendly
  *   identifier that shows up in logs.
  * - Use the run_tests macro to run all the tests in the array.
  *
@@ -107,6 +107,7 @@ void __set_last_line(const int line);
 typedef struct {
     TestFunction test;          /**< Pointer to test function. */
     char name[NAME_MAX_LENGTH]; /**< Name or objective of function. */
+    bool passed;                /**< Has this test passed? */
 } Test;
 
 /**
@@ -123,7 +124,7 @@ typedef struct {
  *
  * @param test Test to run.
  */
-void __run_test(const Test *test);
+void __run_test(Test *test);
 
 /**
  * Run a single benchmark 'times' amount of times.
@@ -143,7 +144,7 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
  * @param tests Array of tests to run.
  * @param n     How many tests are in that array.
  */
-void __run_tests(const Test tests[], const size_t n);
+void __run_tests(Test tests[], const size_t n);
 #define run_tests(tests, n) {\
     fprintf(stderr, "--- TESTS: %s ---\n\n", __FILE__);\
     __run_tests(tests, n);\
@@ -162,6 +163,16 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
     fprintf(stderr, "--- BENCHMARKS: %s ---\n\n", __FILE__);\
     __run_benchmarks(benchmarks, n, warmup, times);\
 }
+
+/**
+ * Count the number of test failures in an array of tests .
+ * Can only be called *after* running tests on an array of tests.
+ *
+ * @param  tests Array of tests that have been executed.
+ * @param  n     Number of tests.
+ * @return       Number of test failures.
+ */
+size_t count_failures(const Test tests[], const size_t n);
 
 /*
  * These assertion functions are used to test parts of the code inside a test function.

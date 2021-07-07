@@ -30,7 +30,7 @@ void benchmark_fma(void) {
     }
 }
 
-static const Test TESTS[] = {
+static Test TESTS[] = {
     { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
     { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" },
     { .test = test_failing, .name = "This test will always fail" }
@@ -43,5 +43,8 @@ static const Benchmark BENCHMARKS[] = {
 int main(void) {
     run_tests(TESTS, sizeof(TESTS) / sizeof(Test));
     run_benchmarks(BENCHMARKS, sizeof(BENCHMARKS) / sizeof(Benchmark), 5, 5);
-    return 0;
+
+    // The -1 in this example is to compensate for the fact that 1 test always fails.
+    // You will not need the -1 in your test files.
+    return count_failures(TESTS, sizeof(TESTS) / sizeof(Test)) - 1;
 }

@@ -2,8 +2,8 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.5.1
- * @date      2021-07-02
+ * @version   1.6.0
+ * @date      2021-07-07
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -336,7 +336,7 @@ void __set_last_line(const int line) {
     __last_line_of_assert_caller = line;
 }
 
-void __run_test(const Test *test) {
+void __run_test(Test *test) {
     fprintf(stderr, "Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
@@ -344,8 +344,10 @@ void __run_test(const Test *test) {
     if (setjmp(env) == 0) {
         test->test();
         tprinterr("\nTest passed. ", true);
+        test->passed = true;
     } else {
         tprinterr("\nTest failed. ", false);
+        test->passed = false;
     }
 
     time = clock() - time;
@@ -399,7 +401,9 @@ clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const s
     return with_wm;
 }
 
-void __run_tests(const Test tests[], const size_t n) {
+void __run_tests(Test tests[], const size_t n) {
+    failures = 0;
+
     fprintf(stderr, "Running %zu test%s.\n\n", n, n != 1 ? "s" : "");
 
     clock_t time;
@@ -428,6 +432,17 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
     }
 
     fprintf(stderr, "Benchmarks completed in %f seconds.\n\n", (double) total / CLOCKS_PER_SEC);
+}
+
+size_t count_failures(const Test tests[], const size_t n) {
+    size_t fails = 0;
+    for (size_t i = 0; i < n; ++i) {
+        if (!tests[i].passed) {
+            ++fails;
+        }
+    }
+
+    return fails;
 }
 
 // Checker functions for the test suite.
