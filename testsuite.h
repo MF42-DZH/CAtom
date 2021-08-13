@@ -2,8 +2,8 @@
  * @file      testsuite.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.7.0
- * @date      2021-07-09
+ * @version   1.8.0
+ * @date      2021-08-13
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -16,7 +16,7 @@
  * It also provides rudimentary benchmarking capabilities, using clock_t in time.h.
  *
  * Compile-time options:
- * - If you want verbose output, add -D__VERBOSE__ to your compile flags when compiling this test suite.
+ * - If you want verbose output by default, add -D__VERBOSE__ to your compile flags when compiling this test suite.
  *
  * User guide:
  * - Create a series of test functions (preferably prefixed with test_), that conform to the TestFunction
@@ -100,6 +100,13 @@ void __set_last_assert(const char *assert);
  * @param line Line where assert was called.
  */
 void __set_last_line(const int line);
+
+/**
+ * Set the verbose printing status of the test suite.
+ *
+ * @param should_use Should the test suite use verbose printing?
+ */
+void use_verbose_print(const bool should_use);
 
 /**
  * A pair struct holding a test function and the test's name.

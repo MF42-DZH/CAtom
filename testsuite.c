@@ -2,15 +2,15 @@
  * @file      testsuite.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.7.0
- * @date      2021-07-09
+ * @version   1.8.0
+ * @date      2021-08-13
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
  * This is CAtom. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
  * and (limited) integration testing on simple functions and pieces of data.
  *
- * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing.
+ * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing by default.
  *
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
@@ -149,6 +149,12 @@ static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
 static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
 
+#ifdef __VERBOSE__
+static bool __use_verbose_printing = true;
+#else
+static bool __use_verbose_printing = false;
+#endif
+
 void vbprintf(FILE *stream, const char *format, ...) {
     va_list args, argcopy;
 
@@ -158,11 +164,11 @@ void vbprintf(FILE *stream, const char *format, ...) {
     vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
     Message.width = NARROW;
 
-#ifdef __VERBOSE__
-    wchar_t wide_format[MAX_STR_LEN];
-    swprintf(wide_format, MAX_STR_LEN, L"%s", format);
-    vfwprintf(stream, wide_format, argcopy);
-#endif
+    if (__use_verbose_printing) {
+        wchar_t wide_format[MAX_STR_LEN];
+        swprintf(wide_format, MAX_STR_LEN, L"%s", format);
+        vfwprintf(stream, wide_format, argcopy);
+    }
 
     va_end(args);
     va_end(argcopy);
@@ -177,9 +183,9 @@ void vbwprintf(FILE *stream, const wchar_t *format, ...) {
     vswprintf(Message.__msg.__wessage, MAX_STR_LEN, format, args);
     Message.width = WIDE;
 
-#ifdef __VERBOSE__
-    vfwprintf(stream, format, argcopy);
-#endif
+    if (__use_verbose_printing) {
+        vfwprintf(stream, format, argcopy);
+    }
 
     va_end(args);
     va_end(argcopy);
@@ -207,11 +213,11 @@ static uint64_t obj_hash(const void *obj, const size_t total_length) {
 }
 
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
-#ifdef __VERBOSE__
-    uint64_t oh1 = obj_hash(obj1, size);
-    uint64_t oh2 = obj_hash(obj2, size);
-    vbprintf(stderr, format, oh1, oh2);
-#endif
+    if (__use_verbose_printing) {
+        uint64_t oh1 = obj_hash(obj1, size);
+        uint64_t oh2 = obj_hash(obj2, size);
+        vbprintf(stderr, format, oh1, oh2);
+    }
 }
 
 // Internal assertion function.
@@ -338,8 +344,12 @@ void __set_last_line(const int line) {
     __last_line_of_assert_caller = line;
 }
 
+void use_verbose_print(const bool should_use) {
+    __use_verbose_printing = should_use;
+}
+
 void __run_test(Test *test) {
-    fwprintf(stderr, L"Running test \"%s\":\n", test->name);
+    fwprintf(stderr, __use_verbose_printing ? L"Running test \"%s\":\n\n" : L"Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
 
