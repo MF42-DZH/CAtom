@@ -27,4 +27,4 @@ clean_docs:
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
-testsuite.o: testsuite.h
+testsuite.o: testsuite.h salloc.h

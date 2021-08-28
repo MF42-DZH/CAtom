@@ -16,6 +16,7 @@
  */
 
 #include "testsuite.h"
+#include "salloc.h"
 
 #include <inttypes.h>
 #include <setjmp.h>
@@ -155,7 +156,7 @@ static bool __use_verbose_printing = true;
 static bool __use_verbose_printing = false;
 #endif
 
-void vbprintf(FILE *stream, const char *format, ...) {
+static void vbprintf(FILE *stream, const char *format, ...) {
     va_list args, argcopy;
 
     va_start(args, format);
@@ -174,7 +175,7 @@ void vbprintf(FILE *stream, const char *format, ...) {
     va_end(argcopy);
 }
 
-void vbwprintf(FILE *stream, const wchar_t *format, ...) {
+static void vbwprintf(FILE *stream, const wchar_t *format, ...) {
     va_list args, argcopy;
 
     va_start(args, format);
@@ -302,7 +303,7 @@ static void add_one(size_t *nums, const size_t ns[], const size_t where, const s
 }
 
 static void compare_arrays(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
-    size_t *current = (size_t *) calloc(argn, sizeof(size_t));
+    size_t *current = (size_t *) alloca(argn * sizeof(size_t));
     if (!current) {
         fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
     }
@@ -317,14 +318,11 @@ static void compare_arrays(const void *arr1, const void *arr2, const bool arr1is
         const void *i2 = get(arr2, arr2isptp, size, ns, argn, current);
 
         if (!validator(i1, i2, size)) {
-            free(current);
             __test_assert__(validator(i1, i2, size));
         }
 
         add_one(current, ns, argn - 1, argn);
     }
-
-    free(current);
 }
 
 // Test runner utilities.
