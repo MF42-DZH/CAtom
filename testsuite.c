@@ -308,6 +308,8 @@ static void compare_arrays(const void *arr1, const void *arr2, const bool arr1is
         fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
     }
 
+    memset(current, 0, argn * sizeof(size_t));
+
     size_t total_items = ns[0];
     for (size_t i = 1; i < argn; ++i) {
         total_items *= ns[i];
@@ -324,6 +326,37 @@ static void compare_arrays(const void *arr1, const void *arr2, const bool arr1is
         add_one(current, ns, argn - 1, argn);
     }
 }
+
+static void compare_arrays_some(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
+    size_t *current = (size_t *) alloca(argn * sizeof(size_t));
+    if (!current) {
+        fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
+    }
+
+    memset(current, 0, argn * sizeof(size_t));
+
+    size_t total_items = ns[0];
+    for (size_t i = 1; i < argn; ++i) {
+        total_items *= ns[i];
+    }
+
+    size_t matches = 0;
+
+    for (size_t i = 0; i < total_items; ++i) {
+        const void *i1 = get(arr1, arr1isptp, size, ns, argn, current);
+        const void *i2 = get(arr2, arr2isptp, size, ns, argn, current);
+
+        if (validator(i1, i2, size)) {
+            ++matches;
+        }
+
+        add_one(current, ns, argn - 1, argn);
+    }
+
+    __test_assert__(matches > 0);
+}
+
+
 
 // Test runner utilities.
 void __set_last_file(const char *filename) {
@@ -567,7 +600,7 @@ void __assert_deep_array_equals(const void *arr1, const void *arr2, const bool a
 
 void __assert_deep_array_not_equals(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[]) {
     vbprintf(stderr, "DEEP ARR NEQ: @%zx and @%zx?\n", (size_t) arr1, (size_t) arr2);
-    compare_arrays(arr1, arr2, arr1isptp, arr2isptp, size, argn, ns, memory_is_not_equals);
+    compare_arrays_some(arr1, arr2, arr1isptp, arr2isptp, size, argn, ns, memory_is_not_equals);
 }
 
 void __assert_not_null(const void *ptr) {
