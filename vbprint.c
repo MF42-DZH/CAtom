@@ -8,6 +8,7 @@ static bool __use_verbose_printing = true;
 static bool __use_verbose_printing = false;
 #endif
 
+MessageMeta Message;
 
 void vbprintf(FILE *stream, const char *format, ...) {
     va_list args, argcopy;

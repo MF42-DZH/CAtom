@@ -342,13 +342,13 @@ void __run_test(Test *test) {
         test->passed = false;
     }
 
-    testfunc_freeall();
-
     time = clock() - time;
 
     fwprintf(stderr, L"\"%s\" terminated in %f seconds.\n",
         test->name, (double) time / CLOCKS_PER_SEC
     );
+
+    testfunc_freeall();
 }
 
 clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times) {

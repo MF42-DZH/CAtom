@@ -7,15 +7,22 @@
 
 #define MAX_STR_LEN 1024
 
+// String width.
+typedef enum {
+    NARROW, WIDE
+} StringWidth;
+
 // Struct holding the last message recorded.
-struct {
-    enum { NARROW, WIDE } width;
+typedef struct {
+    StringWidth width;
 
     union {
         char __message[MAX_STR_LEN];
         wchar_t __wessage[MAX_STR_LEN];
     } __msg;
-} Message;
+} MessageMeta;
+
+extern MessageMeta Message;
 
 void vbprintf(FILE *stream, const char *format, ...);
 

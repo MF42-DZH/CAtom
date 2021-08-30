@@ -27,4 +27,6 @@ clean_docs:
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
+memalloc.o: memalloc.h vbprint.h vbprint.o
+
 catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o

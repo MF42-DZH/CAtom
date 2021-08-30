@@ -13,7 +13,7 @@ static PointerList list = { &CONST_HEAD, &CONST_TAIL };
 
 void init_ptr_list(void) {
     CONST_HEAD.succ = &CONST_TAIL;
-    CONST_TAIL.succ = &CONST_HEAD;
+    CONST_TAIL.pred = &CONST_HEAD;
 }
 
 void *testfunc_malloc(const size_t bytes) {
@@ -38,7 +38,7 @@ void *testfunc_malloc(const size_t bytes) {
         node->ptr = mem;
         node->bytes = bytes;
 
-        vbprintf(stderr, "MEMORY: Allocated %zu bytes of memory at @%" PRIuPTR "!", bytes, mem);
+        vbprintf(stderr, "MEMORY: Allocated %zu bytes of memory at @%" PRIuPTR "!\n", bytes, mem);
         return mem;
     }
 
@@ -49,7 +49,7 @@ void *testfunc_calloc(const size_t n, const size_t size) {
     void *mem = testfunc_malloc(n * size);
     if (mem) {
         memset(mem, 0, n * size);
-        vbprintf(stderr, "MEMORY: Zeroed %zu bytes of memory at @%" PRIuPTR "!", n * size, mem);
+        vbprintf(stderr, "MEMORY: Zeroed %zu bytes of memory at @%" PRIuPTR "!\n", n * size, mem);
 
         return mem;
     }
@@ -74,7 +74,7 @@ void *testfunc_realloc(void *ptr, const size_t bytes) {
 
             cur->bytes = bytes;
 
-            vbprintf(stderr, "MEMORY: Reallocated %zu bytes of memory at @%" PRIuPTR " (from %zu bytes at @%" PRIuPTR ")!", bytes, cur->ptr, old_bytes, old_ptr);
+            vbprintf(stderr, "MEMORY: Reallocated %zu bytes of memory at @%" PRIuPTR " (from %zu bytes at @%" PRIuPTR ")!\n", bytes, cur->ptr, old_bytes, old_ptr);
 
             return cur->ptr;
         }
@@ -91,7 +91,7 @@ void testfunc_free(void *ptr) {
     for (PointerListNode *cur = list.head; cur != list.tail; cur = cur->succ) {
         if (cur->ptr == ptr) {
             free(cur->ptr);
-            vbprintf(stderr, "MEMORY: Freed %zu bytes of memory at @%" PRIuPTR "!", cur->bytes, cur->ptr);
+            vbprintf(stderr, "MEMORY: Freed %zu bytes of memory at @%" PRIuPTR "!\n", cur->bytes, cur->ptr);
 
             cur->pred->succ = cur->succ;
             cur->succ->pred = cur->pred;
@@ -106,5 +106,6 @@ void testfunc_freeall(void) {
     PointerListNode *cur = list.head->succ;
     while (cur != list.tail) {
         testfunc_free(cur->ptr);
+        cur = cur->succ;
     }
 }
