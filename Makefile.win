@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LIB     = libcatom.a
-LIBOBJS = catom.o
+LIBOBJS = catom.o memalloc.o vbprint.o
 BUILD   = $(LIB)
 
 .SUFFIXES: .c .o
@@ -27,4 +27,4 @@ clean_docs:
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
-catom.o: catom.h salloc.h
+catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o

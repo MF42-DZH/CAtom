@@ -461,6 +461,54 @@ void __assert_not_null(const void *ptr);
 #define assert_null(ptr) __gen_assert__(__assert_null, ptr)
 void __assert_null(const void *ptr);
 
+/**
+ * A safe memory allocation function that allows a lightly garbage collected allocation of heap memory.
+ * This allows the use of heap memory inside a test function with asserts where asserts can occur before memory is freed.
+ *
+ * WARNING: Do not free the allocated memory using free. Use testfunc_free to do so if you need to.
+ *
+ * @param  bytes Number of bytes to allocate on the heap.
+ *
+ * @return       If allocation is successful, returns the pointer to the start of the allocated location. Returns NULL otherwise.
+ */
+void *testfunc_malloc(const size_t bytes);
+
+/**
+ * A safe memory allocation function that allows a lightly garbage collected allocation of heap memory.
+ * This allows the use of heap memory inside a test function with asserts where asserts can occur before memory is freed.
+ * This function zeroes out the allocated memory first.
+ *
+ * WARNING: Do not free the allocated memory using free. Use testfunc_free to do so if you need to.
+ *
+ * @param  n    Number of objects being allocated.
+ * @param  size Size of each individual object.
+ *
+ * @return      If allocation is successful, returns the pointer to the start of the allocated location. Returns NULL otherwise.
+ */
+void *testfunc_calloc(const size_t n, const size_t size);
+
+/**
+ * A safe memory reallocation function that allows a lightly garbage collected allocation of heap memory.
+ * This allows the use of heap memory inside a test function with asserts where asserts can occur before memory is freed.
+ * Use a NULL pointer for the ptr argument to make this function act like testfunc_malloc.
+ *
+ * WARNING: Do not free the allocated memory using free. Use testfunc_free to do so if you need to.
+ *
+ * @param  ptr   Pointer to memory location to reallocate.
+ * @param  bytes Number of intended bytes in reallocated space.
+ *
+ * @return       If reallocation is successful, returns the pointer to the start of the allocated location. Returns NULL otherwise.
+ */
+void *testfunc_realloc(void *ptr, const size_t bytes);
+
+/**
+ * Free a piece of memory allocated by one of the testfunc_?alloc functions.
+ * Putting a NULL pointer in the ptr argument makes the function do nothing.
+ *
+ * @param ptr Pointer to memory in order to free. NULL pointers or pointers to memory allocated not by testfunc_?alloc functions are ignored.
+ */
+void testfunc_free(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif

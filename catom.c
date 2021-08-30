@@ -16,7 +16,9 @@
  */
 
 #include "catom.h"
+#include "memalloc.h"
 #include "salloc.h"
+#include "vbprint.h"
 
 #include <inttypes.h>
 #include <setjmp.h>
@@ -25,7 +27,6 @@
 #include <string.h>
 #include <time.h>
 
-#define MAX_STR_LEN 1024
 #define SEP         "--------------------------------------------------------------------------------"
 
 // Helper for printing coloured text for testing.
@@ -135,62 +136,9 @@ static void tprinterr(const char* str, const bool passing) {
 
 // Helper for assertion failure message printer.
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
-
-// Struct holding the last message recorded.
-static struct {
-    enum { NARROW, WIDE } width;
-
-    union {
-        char __message[MAX_STR_LEN];
-        wchar_t __wessage[MAX_STR_LEN];
-    } __msg;
-} Message;
-
 static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
 static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
-
-#ifdef __VERBOSE__
-static bool __use_verbose_printing = true;
-#else
-static bool __use_verbose_printing = false;
-#endif
-
-static void vbprintf(FILE *stream, const char *format, ...) {
-    va_list args, argcopy;
-
-    va_start(args, format);
-    va_copy(argcopy, args);
-
-    vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
-    Message.width = NARROW;
-
-    if (__use_verbose_printing) {
-        wchar_t wide_format[MAX_STR_LEN];
-        swprintf(wide_format, MAX_STR_LEN, L"%s", format);
-        vfwprintf(stream, wide_format, argcopy);
-    }
-
-    va_end(args);
-    va_end(argcopy);
-}
-
-static void vbwprintf(FILE *stream, const wchar_t *format, ...) {
-    va_list args, argcopy;
-
-    va_start(args, format);
-    va_copy(argcopy, args);
-
-    vswprintf(Message.__msg.__wessage, MAX_STR_LEN, format, args);
-    Message.width = WIDE;
-
-    if (__use_verbose_printing) {
-        vfwprintf(stream, format, argcopy);
-    }
-
-    va_end(args);
-    va_end(argcopy);
-}
 
 // Printing utilities.
 #define HASH_CONSTANT 524287u
@@ -214,7 +162,7 @@ static uint64_t obj_hash(const void *obj, const size_t total_length) {
 }
 
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
-    if (__use_verbose_printing) {
+    if (get_verbose_print_status()) {
         uint64_t oh1 = obj_hash(obj1, size);
         uint64_t oh2 = obj_hash(obj2, size);
         vbprintf(stderr, format, oh1, oh2);
@@ -376,13 +324,14 @@ void __set_last_line(const int line) {
 }
 
 void use_verbose_print(const bool should_use) {
-    __use_verbose_printing = should_use;
+    set_verbose_print_status(should_use);
 }
 
 void __run_test(Test *test) {
-    fwprintf(stderr, __use_verbose_printing ? L"Running test \"%s\":\n\n" : L"Running test \"%s\":\n", test->name);
+    fwprintf(stderr, get_verbose_print_status() ? L"Running test \"%s\":\n\n" : L"Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
+    init_ptr_list();
 
     if (setjmp(env) == 0) {
         test->test();
@@ -392,6 +341,8 @@ void __run_test(Test *test) {
         tprinterr("\nTest failed. ", false);
         test->passed = false;
     }
+
+    testfunc_freeall();
 
     time = clock() - time;
 
