@@ -46,6 +46,10 @@
 #ifndef __TESTSUITE_H__
 #define __TESTSUITE_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <locale.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -456,5 +460,9 @@ void __assert_not_null(const void *ptr);
  */
 #define assert_null(ptr) __gen_assert__(__assert_null, ptr)
 void __assert_null(const void *ptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // __TESTSUITE_H__
