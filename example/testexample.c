@@ -1,4 +1,4 @@
-#include "../testsuite.h"
+#include "../catom.h"
 #include "example.h"
 
 void test_fma_correct_result(void) {

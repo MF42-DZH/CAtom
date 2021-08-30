@@ -1,6 +1,6 @@
 CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
-LDFLAGS = -L.. -ltestsuite
+LDFLAGS = -L.. -lcatom
 TARGET  = testexample
 OBJS    = example.o testexample.o
 BUILD   = $(TARGET)

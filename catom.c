@@ -1,9 +1,9 @@
 /**
- * @file      testsuite.c
+ * @file      catom.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.8.0
- * @date      2021-08-13
+ * @version   1.9.0
+ * @date      2021-08-30
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -15,7 +15,7 @@
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
 
-#include "testsuite.h"
+#include "catom.h"
 #include "salloc.h"
 
 #include <inttypes.h>

@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
-LIB     = libtestsuite.a
-LIBOBJS = testsuite.o
+LIB     = libcatom.a
+LIBOBJS = catom.o
 BUILD   = $(LIB)
 
 .SUFFIXES: .c .o
@@ -27,4 +27,4 @@ clean_docs:
 $(LIB): $(LIBOBJS)
 	ar rcs $(LIB) $(LIBOBJS)
 
-testsuite.o: testsuite.h salloc.h
+catom.o: catom.h salloc.h
