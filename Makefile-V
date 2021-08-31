@@ -1,8 +1,15 @@
 CC      = gcc
-CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -D__VERBOSE__ -std=c99 -Wextra -Werror -pedantic
+CFLAGS  = -g3 -Og -D__VERBOSE__ -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LIB     = libcatom.a
 LIBOBJS = catom.o memalloc.o vbprint.o
 BUILD   = $(LIB)
+
+REMOVE =
+ifeq ($(OS), Windows_NT)
+	REMOVE += DEL /S /F /Q
+else
+	REMOVE += rm -rf
+endif
 
 .SUFFIXES: .c .o
 
@@ -13,7 +20,7 @@ all: $(BUILD)
 rebuild: clean all
 
 clean:
-	rm -f $(BUILD) *.o
+	$(REMOVE) $(BUILD) *.o
 
 docs:
 	+$(MAKE) -C doc

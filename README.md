@@ -101,9 +101,19 @@ int main(void) {
 CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LDFLAGS = -L.. -lcatom
-TARGET  = testexample
+NAME    = testexample
 OBJS    = example.o testexample.o
 BUILD   = $(TARGET)
+
+TARGET  =
+REMOVE  =
+ifeq ($(OS), Windows_NT)
+	TARGET += testexample.exe
+	REMOVE += DEL /S /F /Q
+else
+	TARGET += testexample
+	REMOVE += rm -rf
+endif
 
 .SUFFIXES: .c .o
 
@@ -114,13 +124,13 @@ all: mod testsuite $(BUILD) test
 rebuild: clean all
 
 clean:
-	rm -f $(BUILD) *.o
+	$(REMOVE) $(BUILD) *.o
 
 $(TARGET): $(OBJS)
 	gcc $(OBJS) -o $@ $(LDFLAGS)
 
 mod:
-	touch $(TARGET)
+	touch $(NAME).c
 
 test:
 	./$(TARGET)
@@ -200,6 +210,5 @@ Documentation is available in the `doc` folder. You can manually generate it wit
 * All assertions are macros. Do not use the \_\_-prefixed public functions.
 * For a more detailed version of the example including a sample makefile, see the `example` subdirectory.
 * You must compile this test suite and any test sources with at least the `-g` flag and no optimisation flags (alternatively `-Og`) to get useful results.
-* On Windows, use `Makefile.win` instead of the normal `Makefile`.
 * Use the `-V` makefiles to use the verbose test suite. Useful for debugging when asserts occur.
 * You may get a warning from your linter that adding an int to a string does not concatenate them when you're using the assert macros. Feel free to ignore that warning.
