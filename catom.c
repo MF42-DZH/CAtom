@@ -331,7 +331,6 @@ void __run_test(Test *test) {
     fwprintf(stderr, get_verbose_print_status() ? L"Running test \"%s\":\n\n" : L"Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
-    init_ptr_list();
 
     if (setjmp(env) == 0) {
         test->test();

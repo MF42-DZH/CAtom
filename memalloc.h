@@ -20,11 +20,6 @@ typedef struct {
 } PointerList;
 
 /**
- * Initialise the memory pointer list.
- */
-void init_ptr_list(void);
-
-/**
  * Attempt to free every pointer allocated by the testfunc_?alloc functions.
  *
  * WARNING: This function is automatically called after a test finishes.

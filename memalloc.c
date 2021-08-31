@@ -6,15 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static PointerListNode CONST_HEAD = { NULL, 0, NULL, NULL };
-static PointerListNode CONST_TAIL = { NULL, 0, NULL, NULL };
+static PointerListNode CONST_TAIL;
+static PointerListNode CONST_HEAD = { NULL, 0, NULL, &CONST_TAIL };
+static PointerListNode CONST_TAIL = { NULL, 0, &CONST_HEAD, NULL };
 
 static PointerList list = { &CONST_HEAD, &CONST_TAIL };
-
-void init_ptr_list(void) {
-    CONST_HEAD.succ = &CONST_TAIL;
-    CONST_TAIL.pred = &CONST_HEAD;
-}
 
 void *testfunc_malloc(const size_t bytes) {
     void *mem = malloc(bytes);
@@ -104,6 +100,11 @@ void testfunc_free(void *ptr) {
 
 void testfunc_freeall(void) {
     PointerListNode *cur = list.head->succ;
+
+    if (cur != list.tail) {
+        vbprintf(stderr, "\n");
+    }
+
     while (cur != list.tail) {
         testfunc_free(cur->ptr);
         cur = cur->succ;
