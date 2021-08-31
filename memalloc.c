@@ -21,6 +21,7 @@ void *testfunc_malloc(const size_t bytes) {
         // Create a new list node to store the newly allocated pointer.
         PointerListNode *node = (PointerListNode *) malloc(sizeof(PointerListNode));
         if (!node) {
+            free(mem);
             return NULL;
         }
 
