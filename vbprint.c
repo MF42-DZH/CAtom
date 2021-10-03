@@ -17,11 +17,15 @@ void vbprintf(FILE *stream, const char *format, ...) {
     va_copy(argcopy, args);
 
     vsnprintf(Message.__msg.__message, MAX_STR_LEN, format, args);
+    Message.__msg.__message[MAX_STR_LEN - 1] = '\0';
+
     Message.width = NARROW;
 
     if (__use_verbose_printing) {
         wchar_t wide_format[MAX_STR_LEN];
         swprintf(wide_format, MAX_STR_LEN, L"%s", format);
+        wide_format[MAX_STR_LEN - 1] = L'\0';
+
         vfwprintf(stream, wide_format, argcopy);
     }
 
@@ -36,6 +40,8 @@ void vbwprintf(FILE *stream, const wchar_t *format, ...) {
     va_copy(argcopy, args);
 
     vswprintf(Message.__msg.__wessage, MAX_STR_LEN, format, args);
+    Message.__msg.__wessage[MAX_STR_LEN - 1] = L'\0';
+
     Message.width = WIDE;
 
     if (__use_verbose_printing) {
