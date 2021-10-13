@@ -30,7 +30,7 @@
 #include <string.h>
 #include <time.h>
 
-#define SEP         "--------------------------------------------------------------------------------"
+#define SEP "--------------------------------------------------------------------------------"
 
 // Helper for assertion failure message printer.
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
