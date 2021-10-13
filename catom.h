@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-03
+ * @date      2021-10-13
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -177,6 +177,11 @@ void __run_benchmarks(const Benchmark benchmarks[], const size_t n, const size_t
     fwprintf(stderr, L"--- BENCHMARKS: %s ---\n\n", __FILE__);\
     __run_benchmarks(benchmarks, n, warmup, times);\
 }
+
+/**
+ * Reset the number of recorded test failures.
+ */
+void reset_failures(void);
 
 /**
  * Count the number of test failures in an array of tests .

@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-03
+ * @date      2021-10-13
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -16,8 +16,11 @@
  */
 
 #include "catom.h"
+#include "genarrays.h"
+#include "hashing.h"
 #include "memalloc.h"
 #include "salloc.h"
+#include "tprinterr.h"
 #include "vbprint.h"
 
 #include <inttypes.h>
@@ -29,111 +32,6 @@
 
 #define SEP         "--------------------------------------------------------------------------------"
 
-// Helper for printing coloured text for testing.
-static void tprinterr(const char* str, const bool passing);
-
-static const wchar_t *PASSING = L"\x1b[32;1m%s\x1b[0m";
-static const wchar_t *FAILING = L"\x1b[31;1m%s\x1b[0m";
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#include <windows.h>
-#include <fileapi.h>
-
-static HANDLE __stderr_handle__ = NULL;
-static DWORD __stderr_mode__ = 0;
-
-static bool stderr_isatty(void) {
-    HANDLE stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
-
-    if (!stderr_handle) {
-        // stderr does not exist.
-        return false;
-    }
-
-    // Get the file type of stderr.
-    DWORD typeof_stderr = GetFileType(stderr_handle);
-
-    if (typeof_stderr == FILE_TYPE_CHAR) {
-        // Potentially console?
-        DWORD mode = 0;
-        if (GetConsoleMode(stderr_handle, &mode)) {
-            // Is a console!
-            __stderr_handle__ = stderr_handle;
-            __stderr_mode__ = mode;
-
-            return true;
-        } else {
-            // Is a printer or something.
-            return false;
-        }
-    } else {
-        // Nope.
-        return false;
-    }
-}
-
-static bool get_console_colour(HANDLE console, WORD *out) {
-    CONSOLE_SCREEN_BUFFER_INFO info;
-
-    if (!GetConsoleScreenBufferInfo(console, &info)) {
-        return false;
-    }
-
-    *out = info.wAttributes;
-    return true;
-}
-
-static void tprinterr(const char* str, const bool passing) {
-    // Constant console colour attributes.
-    static const WORD DEFAULT_ATTR = 7;
-    static const WORD PASSING_ATTR = 10;
-    static const WORD FAILING_ATTR = 12;
-
-    // Check if console.
-    static bool set = false;
-    static bool istty = false;
-
-    if (!set) {
-        set = true;
-        istty = stderr_isatty();
-    }
-
-    // Handle different scenarios depending on if console or not.
-    if (istty) {
-        if (__stderr_mode__ & ENABLE_VIRTUAL_TERMINAL_PROCESSING) {
-            // Use ASCII escapes; console has VT-compat.
-            fwprintf(stderr, passing ? PASSING : FAILING, str);
-        } else {
-            // Get current console colour or default.
-            WORD colour = DEFAULT_ATTR;
-            if (!get_console_colour(__stderr_handle__, &colour)) {
-                fwprintf(stderr, L"*** [WARNING] STDERR attribute fetching failed! ***\n");
-            }
-
-            // Legacy handling, using text attributes.
-            SetConsoleTextAttribute(__stderr_handle__, passing ? PASSING_ATTR : FAILING_ATTR);
-            fwprintf(stderr, L"%s", str);
-            SetConsoleTextAttribute(__stderr_handle__, colour);
-        }
-    } else {
-        // No colour.
-        fwprintf(stderr, L"%s", str);
-    }
-}
-#else
-#include <unistd.h>
-
-static void tprinterr(const char* str, const bool passing) {
-    if (isatty(fileno(stderr))) {
-        // Use ASCII escapes.
-        fwprintf(stderr, passing ? PASSING : FAILING, str);
-    } else {
-        // No colour.
-        fwprintf(stderr, L"%s", str);
-    }
-}
-#endif
-
 // Helper for assertion failure message printer.
 static char __last_assert_caller_file[MAX_STR_LEN] = { '\0' };
 static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
@@ -141,26 +39,6 @@ static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
 
 // Printing utilities.
-#define HASH_CONSTANT 524287u
-
-static uint64_t obj_hash(const void *obj, const size_t total_length) {
-    uint64_t result = 0u;
-
-    if (obj) {
-        result = 1u;
-        uint64_t multiplier = 1u;
-
-        for (size_t i = 0; i < total_length; ++i) {
-            uint8_t cur = ((uint8_t *) obj)[i];
-            result += ((uint64_t) cur) * multiplier;
-
-            multiplier *= HASH_CONSTANT;
-        }
-    }
-
-    return result;
-}
-
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
     if (get_verbose_print_status()) {
         uint64_t oh1 = obj_hash(obj1, size);
@@ -173,6 +51,10 @@ static void print_obj_hashes(const char *format, const void *obj1, const void *o
 static jmp_buf env;
 static size_t failures = 0;
 static bool in_benchmark = false;
+
+void reset_failures(void) {
+    failures = 0u;
+}
 
 static void fail_test(void) {
     ++failures;
@@ -205,34 +87,6 @@ static void fail_test(void) {
 }
 
 // Comparison of arrays function.
-static const void *get_from_flat(const void *arr, const size_t size, const size_t ns[], const size_t argn, const size_t *where) {
-    // Assuming C arrays are in row-major order...
-    size_t offset = 0;
-    size_t mult = 1;
-    for (size_t n = argn - 1; n < argn; --n) {
-        offset += where[n] * mult;
-        mult *= ns[n];
-    }
-
-    return (uint8_t *) arr + (offset * size);
-}
-
-static const void *get_from_ptp(const void *arr, const size_t size, const size_t argn, const size_t *where) {
-    if (argn == 1) {
-        return (uint8_t *) arr + (where[0] * size);
-    } else {
-        return get_from_ptp(*((uint8_t **) arr + where[0]), size, argn - 1, where + 1);
-    }
-}
-
-static const void *get(const void *arr, const bool isptp, const size_t size, const size_t ns[], const size_t argn, const size_t *where) {
-    if (isptp) {
-        return get_from_ptp(arr, size, argn, where);
-    } else {
-        return get_from_flat(arr, size, ns, argn, where);
-    }
-}
-
 typedef bool (*MemoryValidator)(const void *, const void *, const size_t);
 
 static bool memory_is_equals(const void *m1, const void *m2, const size_t n) {
@@ -303,8 +157,6 @@ static void compare_arrays_some(const void *arr1, const void *arr2, const bool a
 
     __test_assert__(matches > 0);
 }
-
-
 
 // Test runner utilities.
 void __set_last_file(const char *filename) {
