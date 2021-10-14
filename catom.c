@@ -15,6 +15,7 @@
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
 
+#include "arrcmp.h"
 #include "catom.h"
 #include "genarrays.h"
 #include "hashing.h"
@@ -86,25 +87,16 @@ static void fail_test(void) {
     }\
 }
 
-// Comparison of arrays function.
-typedef bool (*MemoryValidator)(const void *, const void *, const size_t);
-
-static bool memory_is_equals(const void *m1, const void *m2, const size_t n) {
-    return memcmp(m1, m2, n) == 0;
-}
-
-static bool memory_is_not_equals(const void *m1, const void *m2, const size_t n) {
-    return !memory_is_equals(m1, m2, n);
-}
-
-static void add_one(size_t *nums, const size_t ns[], const size_t where, const size_t max) {
+// Generalised add-one-to-int-array.
+void add_one(size_t *nums, const size_t ns[], const size_t where, const size_t max) {
     if (where < max && ++nums[where] >= ns[where]) {
         nums[where] = 0;
         add_one(nums, ns, where - 1, max);
     }
 }
 
-static void compare_arrays(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
+// Comparison of arrays function.
+void compare_arrays(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
     size_t *current = (size_t *) alloca(argn * sizeof(size_t));
     if (!current) {
         fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");
@@ -129,7 +121,8 @@ static void compare_arrays(const void *arr1, const void *arr2, const bool arr1is
     }
 }
 
-static void compare_arrays_some(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
+// Comparison of arrays function.
+void compare_arrays_some(const void *arr1, const void *arr2, const bool arr1isptp, const bool arr2isptp, const size_t size, const size_t argn, const size_t ns[], const MemoryValidator validator) {
     size_t *current = (size_t *) alloca(argn * sizeof(size_t));
     if (!current) {
         fwprintf(stderr, L"*** [WARNING] Comparison of arrays failed to allocate enough memory. ***\n");

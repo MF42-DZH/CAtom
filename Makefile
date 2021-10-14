@@ -1,7 +1,7 @@
 CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LIB     = libcatom.a
-LIBOBJS = catom.o memalloc.o vbprint.o tprinterr.o genarrays.o hashing.o
+LIBOBJS = catom.o memalloc.o vbprint.o tprinterr.o genarrays.o hashing.o arrcmp.o
 BUILD   = $(LIB)
 
 REMOVE =
@@ -36,4 +36,4 @@ $(LIB): $(LIBOBJS)
 
 memalloc.o: memalloc.h vbprint.h vbprint.o
 
-catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o tprinterr.h tprinterr.o genarrays.h genarrays.o hashing.h hashing.o
+catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o tprinterr.h tprinterr.o genarrays.h genarrays.o hashing.h hashing.o arrcmp.h arrcmp.o
