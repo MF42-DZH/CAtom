@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-13
+ * @date      2021-10-19
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -406,4 +406,12 @@ void __assert_not_null(const void *ptr) {
 void __assert_null(const void *ptr) {
     vbprintf(stderr, "PTR is NULL: %zu == %zu?\n", (size_t) ptr, (size_t) NULL);
     __test_assert__(!ptr);
+}
+
+void __assert_time_limit(const TestFunction func, double time_limit) {
+    clock_t time = clock();
+    func();
+    time = clock() - time;
+
+    __test_assert__((double) time / CLOCKS_PER_SEC <= time_limit);
 }
