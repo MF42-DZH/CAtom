@@ -441,15 +441,6 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     HANDLE t_handle = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
     DWORD test_result = WaitForSingleObject(test_semaphore, time_limit * 1000);
 
-    if (test_result == WAIT_FAILED) {
-        TerminateThread(t_handle, -1);
-        CloseHandle(t_handle);
-        CloseHandle(test_semaphore);
-
-        fwprintf(stderr, L"*** Failed to wait on semaphore! ***\n");
-        __test_assert__(false);
-    }
-
     // Check our result.
     switch (test_result) {
         case WAIT_OBJECT_0:
@@ -463,6 +454,15 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
             CloseHandle(t_handle);
             CloseHandle(test_semaphore);
 
+            __test_assert__(false);
+            break;
+        case WAIT_FAILED:
+            // Waiting on semaphore failed.
+            TerminateThread(t_handle, -1);
+            CloseHandle(t_handle);
+            CloseHandle(test_semaphore);
+
+            fwprintf(stderr, L"*** Failed to wait on semaphore! ***\n");
             __test_assert__(false);
             break;
         default:
