@@ -36,4 +36,4 @@ $(LIB): $(LIBOBJS)
 
 memalloc.o: memalloc.h vbprint.h vbprint.o
 
-catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o tprinterr.h tprinterr.o genarrays.h genarrays.o hashing.h hashing.o arrcmp.h arrcmp.o
+catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o tprinterr.h tprinterr.o genarrays.h genarrays.o hashing.h hashing.o arrcmp.h arrcmp.o whatos.h

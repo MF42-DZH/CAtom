@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-19
+ * @date      2021-10-20
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -469,11 +469,25 @@ void __assert_null(const void *ptr);
 /**
  * Assert that a function exits in under a given amount of time.
  *
+ * DO NOT USE ASSERTIONS IN TIME-LIMITED FUNCTIONS.
+ *
  * @param func       Function to test.
  * @param time_limit Maximum number of seconds to wait until the assertion fails.
  */
 #define assert_time_limit(func, time_limit) __gen_assert__(__assert_time_limit, func, time_limit)
 void __assert_time_limit(const TestFunction func, double time_limit);
+
+/**
+ * Assert that a function exits in under a given amount of time.
+ * This version of the function will terminate early if the function finishes early or if the time limit expires.
+ *
+ * DO NOT USE ASSERTIONS IN TIME-LIMITED FUNCTIONS.
+ *
+ * @param func       Function to test.
+ * @param time_limit Maximum number of seconds to wait until the assertion fails.
+ */
+#define assert_time_limit_async(func, time_limit) __gen_assert__(__assert_time_limit_async, func, time_limit)
+void __assert_time_limit_async(const TestFunction func, double time_limit);
 
 /**
  * A safe memory allocation function that allows a lightly garbage collected allocation of heap memory.

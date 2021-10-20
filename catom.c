@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-19
+ * @date      2021-10-20
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -23,11 +23,11 @@
 #include "salloc.h"
 #include "tprinterr.h"
 #include "vbprint.h"
+#include "whatos.h"
 
 #include <inttypes.h>
 #include <setjmp.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
@@ -413,5 +413,97 @@ void __assert_time_limit(const TestFunction func, double time_limit) {
     func();
     time = clock() - time;
 
-    __test_assert__((double) time / CLOCKS_PER_SEC <= time_limit);
+    __test_assert__((double) time / CLOCKS_PER_SEC <= (double) time_limit);
 }
+
+// Implementations of async time limit assertion.
+#ifdef OS_WINDOWS
+#include <windows.h>
+
+static TestFunction __running_testfunc__;
+static HANDLE test_semaphore;
+
+static DWORD WINAPI __testfunc_runner__(void *param __attribute__((unused))) {
+    __running_testfunc__();
+    ReleaseSemaphore(test_semaphore, 1, NULL);
+
+    return 0;
+}
+
+void __assert_time_limit_async(const TestFunction func, double time_limit) {
+    // Initialise our variables and semaphores.
+    __running_testfunc__ = func;
+    test_semaphore = CreateSemaphore(NULL, 0, 1, NULL);
+
+    // Create our new thread and wait for the semaphore.
+    HANDLE t_handle = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
+    DWORD test_result = WaitForSingleObject(test_semaphore, time_limit * 1000);
+
+    if (test_result == WAIT_FAILED) {
+        TerminateThread(t_handle, -1);
+        CloseHandle(t_handle);
+        CloseHandle(test_semaphore);
+
+        fwprintf(stderr, L"*** Failed to wait on semaphore! ***\n");
+        __test_assert__(false);
+    }
+
+    // Check our result.
+    switch (test_result) {
+        case WAIT_OBJECT_0:
+            // All good.
+            CloseHandle(test_semaphore);
+            CloseHandle(t_handle);
+            break;
+        case WAIT_TIMEOUT:
+            // Function failed to exit.
+            TerminateThread(t_handle, -1);
+            CloseHandle(t_handle);
+            CloseHandle(test_semaphore);
+
+            __test_assert__(false);
+            break;
+        default:
+            // How did you get here?
+            TerminateThread(t_handle, -1);
+            CloseHandle(t_handle);
+            CloseHandle(test_semaphore);
+
+            fwprintf(stderr, L"*** Abnormal wait return: %d. ***\n", test_result);
+
+            __test_assert__(false);
+            break;
+    }
+}
+#else
+#include <sys/wait.h>
+#include <unistd.h>
+
+static __attribute__((noreturn)) void __testfunc_runner__(const TestFunction func, double time_limit) {
+    ualarm((uint32_t) (1000000 * time_limit));
+    func();
+    exit(0);
+    __builtin_unreachable();
+}
+
+void __assert_time_limit_async(const TestFunction func, double time_limit) {
+    pid_t child = -1;
+    switch ((child = fork())) {
+        case -1:
+            fwprintf(stderr, L"*** Failed to create child process! ***\n");
+            __test_assert__(false);
+            break;
+        case 0:
+            __testfunc_runner__(func, time_limit);
+            break;
+        default:
+            {
+                int child_status;
+                waitpid(-1, &child_status, 0);
+
+                __test_assert__(WIFEXITED(child_status));
+            }
+            break;
+    }
+}
+#endif

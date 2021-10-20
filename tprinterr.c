@@ -1,8 +1,9 @@
 #include "tprinterr.h"
+#include "whatos.h"
 
 #include <stdio.h>
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+#ifdef OS_WINDOWS
 #include <windows.h>
 #include <fileapi.h>
 
