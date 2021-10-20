@@ -431,6 +431,8 @@ static DWORD WINAPI __testfunc_runner__(void *param __attribute__((unused))) {
 }
 
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
+    vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
+
     // Initialise our variables and semaphores.
     __running_testfunc__ = func;
     test_semaphore = CreateSemaphore(NULL, 0, 1, NULL);
@@ -476,31 +478,58 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     }
 }
 #else
+#include <signal.h>
+#include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-static __attribute__((noreturn)) void __testfunc_runner__(const TestFunction func, double time_limit) {
-    ualarm((uint32_t) (1000000 * time_limit));
+static pid_t __child__ = -1;
+
+static const struct timeval ZERO = { 0, 0 };
+
+static __attribute__((noreturn)) void __testfunc_runner__(const TestFunction func) {
     func();
     exit(0);
     __builtin_unreachable();
 }
 
+static void __alarm_handler__(int param __attribute__((unused))) {
+    if (__child__ >= 0) {
+        kill(__child__, SIGKILL);
+    }
+}
+
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
-    pid_t child = -1;
-    switch ((child = fork())) {
+    vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
+
+    int child_status;
+    uint32_t seconds = (uint32_t) time_limit;
+
+    struct itimerval timer_init_val = {
+        .it_interval = ZERO,
+        .it_value = {
+            .tv_sec = seconds,
+            .tv_usec = ((time_limit - seconds) * 1000000)
+        }
+    };
+
+    switch ((__child__ = fork())) {
         case -1:
             fwprintf(stderr, L"*** Failed to create child process! ***\n");
             __test_assert__(false);
             break;
         case 0:
-            __testfunc_runner__(func, time_limit);
+            __testfunc_runner__(func);
             break;
         default:
             {
-                int child_status;
-                waitpid(-1, &child_status, 0);
+                void (*prev_handler)(int) = signal(SIGALRM, __alarm_handler__);
+                setitimer(ITIMER_REAL, &timer_init_val, NULL);
 
+                waitpid(-1, &child_status, 0);
+                __child__ = -1;
+
+                signal(SIGALRM, prev_handler);
                 __test_assert__(WIFEXITED(child_status));
             }
             break;
