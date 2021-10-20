@@ -487,6 +487,8 @@ static pid_t __child__ = -1;
 
 static const struct timeval ZERO = { 0, 0 };
 
+static const struct itimerval IT_ZERO = { { 0, 0 }, { 0, 0 } };
+
 static __attribute__((noreturn)) void __testfunc_runner__(const TestFunction func) {
     func();
     exit(0);
@@ -502,6 +504,7 @@ static void __alarm_handler__(int param __attribute__((unused))) {
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
     vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
 
+    // Create timer initialiser.
     int child_status;
     uint32_t seconds = (uint32_t) time_limit;
 
@@ -513,6 +516,7 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
         }
     };
 
+    // Fork process here, where child runs the test function, and parent monitors it.
     switch ((__child__ = fork())) {
         case -1:
             fwprintf(stderr, L"*** Failed to create child process! ***\n");
@@ -523,13 +527,21 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
             break;
         default:
             {
+                // Set alarm handler signal to kill child.
                 void (*prev_handler)(int) = signal(SIGALRM, __alarm_handler__);
-                setitimer(ITIMER_REAL, &timer_init_val, NULL);
 
+                // Set timer, run function, wait for child. If timer expires, child is killed.
+                setitimer(ITIMER_REAL, &timer_init_val, NULL);
                 waitpid(-1, &child_status, 0);
+                setitimer(ITIMER_REAL, &IT_ZERO, NULL);
+
+                // Reset the child value.
                 __child__ = -1;
 
+                // Reset the signal handler to the default.
                 signal(SIGALRM, prev_handler);
+
+                // Check exit code of child process.
                 __test_assert__(WIFEXITED(child_status));
             }
             break;
