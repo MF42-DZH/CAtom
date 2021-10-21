@@ -113,7 +113,7 @@ void __set_last_line(const int line);
 void use_verbose_print(const bool should_use);
 
 /**
- * A pair struct holding a test function and the test's name.
+ * A triplet struct holding a test function and the test's name.
  * E.g. test: test_ints_equal | name: "test if two returned ints are equal"
  */
 typedef struct {
@@ -123,6 +123,34 @@ typedef struct {
 } Test;
 
 /**
+ * Create a template for an untimed test.
+ *
+ * @param test_name   Desired identifier for the test.
+ * @param description Description of test which will be printed out when running.
+ */
+#define UNTIMED_TEST(test_name, description) \
+    static void __ ## test_name(void);\
+    static Test test_name = { __ ## test_name, description, false };\
+    static void __ ## test_name(void)
+
+/**
+ * Create a template for a timed test.
+ *
+ * @param test_name   Desired identifier for the test.
+ * @param description Description of test which will be printed out when running.
+ * @param time_limit  A decimal number of seconds time limit.
+ * @param early_exit  Should the function exit early if the time limit expires?
+ */
+#define TIMED_TEST(test_name, description, time_limit, early_exit) \
+    static void __timed_ ## test_name(void);\
+    static void __ ## test_name(void) {\
+        if (early_exit) assert_time_limit_async(__timed_ ## test_name, timeout);\
+        else assert_time_limit(__timed_ ## test_name, timeout);\
+    }\
+    static Test test_name = { __ ## test_name, description, false };\
+    static void __timed_ ## test_name(void)
+
+/**
  * A pair struct holding a benchmark function and the benchmark's name.
  * E.g. test: benchmark_ints_equal | name: "benchmark performance of equality check for ints"
  */
@@ -130,6 +158,17 @@ typedef struct {
     BenchmarkFunction benchmark; /**< Pointer to benchmark function. */
     char name[NAME_MAX_LENGTH];  /**< Benchmark name or description. */
 } Benchmark;
+
+/**
+ * Create a template for an untimed test.
+ *
+ * @param test_name   Desired identifier for the test.
+ * @param description Description of test which will be printed out when running.
+ */
+#define BENCHMARK(benchmark_name, description) \
+    static void __ ## benchmark_name(void);\
+    static Benchmark benchmark_name = { __ ## benchmark_name, description };\
+    static void __ ## benchmark_name(void)
 
 /**
  * Run an array of tests.

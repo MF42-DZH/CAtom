@@ -64,6 +64,9 @@ static void fail_test(void) {
     longjmp(env, 1);
 }
 
+// This is defined separately at the bottom of the file.
+static void terminate_timed_test(void);
+
 #define __test_assert__(cond) if (!(cond)) {\
     if (Message.width == NARROW) {\
         fwprintf(stderr, L"\n[%s] Assertion Failed. %s failed in %s at line %d:\n%s",\
@@ -82,8 +85,10 @@ static void fail_test(void) {
                 Message.__msg.__wessage\
         );\
     }\
-    if (in_benchmark || in_timed) {\
+    if (in_benchmark) {\
         fwprintf(stderr, L"\n*** [WARNING] Do not use asserts inside a benchmark or timed test! ***\n");\
+    } else if (in_timed) {\
+        terminate_timed_test();\
     } else {\
         fail_test();\
     }\
@@ -423,13 +428,18 @@ void __assert_time_limit(const TestFunction func, double time_limit) {
 #include <windows.h>
 
 static TestFunction __running_testfunc__;
-static HANDLE test_semaphore;
+static HANDLE test_thread = NULL;
+static HANDLE test_semaphore = NULL;
 
 static DWORD WINAPI __testfunc_runner__(void *param __attribute__((unused))) {
     __running_testfunc__();
     ReleaseSemaphore(test_semaphore, 1, NULL);
 
     return 0;
+}
+
+static void terminate_timed_test(void) {
+    TerminateThread(test_thread, -1);
 }
 
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
@@ -443,14 +453,14 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     in_timed = true;
 
     // Create our new thread and wait for the semaphore.
-    HANDLE t_handle = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
+    test_thread = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
     DWORD test_result = WaitForSingleObject(test_semaphore, time_limit * 1000);
 
     // Terminate thread and free up resources.
-    TerminateThread(t_handle, -1);
+    TerminateThread(test_thread, -1);
 
     CloseHandle(test_semaphore);
-    CloseHandle(t_handle);
+    CloseHandle(test_thread);
 
     // We're no longer in a timed test.
     in_timed = false;
@@ -498,6 +508,10 @@ static void __alarm_handler__(int param __attribute__((unused))) {
     if (__child__ >= 0) {
         kill(__child__, SIGKILL);
     }
+}
+
+static void terminate_timed_test(void) {
+    exit(-1);
 }
 
 void __assert_time_limit_async(const TestFunction func, double time_limit) {

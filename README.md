@@ -8,12 +8,12 @@ This is a simple test suite for running unit tests on C code.
     <li>Clone this test suite into your project. If your project is also a git repository, add <code>CAtom/*</code> To your <code>.gitignore</code> first.</li>
     <li>Build this test suite. A simple <code>make</code> is enough to do so.</li>
     <li>Include <code>catom.h</code> in the test source code that is calling this test suite.</li>
-    <li>Create some test functions that match the signature <code>void (*TestFunction)(void)</code>.</li>
-    <li>Create a <code>static</code> array of <code>Test</code> structs at the global level in your test source.</li>
+    <li>Create some test functions using the <code>UNTIMED_TEST</code> and <code>TIMED_TEST</code>.</li>
+    <li>Create an array of <code>Test</code> structs at the top of <code>main</code> in your test source.</li>
     <li>Call <code>run_tests</code> using that array of <code>Test</code> structs in <code>main</code>.</li>
     <li>When building the test sources, link <code>libcatom.a</code> from this folder.</li>
     <li>Simply run your test code in order to run the tests.</li>
-    <li>Repeat steps 4-6 using the <code>void (*BenchmarkFunction)(void)</code> signature, the <code>Benchmark</code> struct and the <code>run_benchmarks</code> function to run a set of benchmarks. You can use a <code>static const</code> array of benchmarks.</li>
+    <li>Repeat steps 4-6 using the <code>BENCHMARK</code> macro and the <code>run_benchmarks</code> function to run a set of benchmarks. You can use a <code>const</code> array of benchmarks at the top of <code>main</code>.</li>
 </ol>
 
 ### Example
@@ -46,13 +46,13 @@ float exm_fma(float a, float b, float c) {
 #include "../catom.h"
 #include "example.h"
 
-void test_fma_correct_result(void) {
+UNTIMED_TEST(test_fma_correct_result, "Test if fma returns correct results") {
     assert_float_equals(exm_fma(1.0f, 1.0f, 0.0f), 1.0f, 0.001f);
     assert_float_equals(exm_fma(2.0f, 3.0f, 4.0f), 10.0f, 0.001f);
     assert_float_equals(exm_fma(8.0f, 1.5f, 2.5f), 14.5f, 0.001f);
 }
 
-void test_fma_negatives(void) {
+UNTIMED_TEST(test_fma_negatives, "Test if fma correctly handles negatives") {
     assert_float_equals(exm_fma(-1.0f, 1.0f, 0.0f), -1.0f, 0.001f);
     assert_float_equals(exm_fma(1.0f, -1.0f, 0.0f), -1.0f, 0.001f);
     assert_float_equals(exm_fma(-1.0f, -1.0f, 0.0f), 1.0f, 0.001f);
@@ -60,12 +60,12 @@ void test_fma_negatives(void) {
     assert_float_equals(exm_fma(-5.0f, 5.0f, 10.0f), -15.0f, 0.001f);
 }
 
-void test_failing(void) {
+UNTIMED_TEST(test_failing, "This test will always fail") {
     // This is an example of a test that fails on purpose.
     assert_true(false);
 }
 
-void benchmark_fma(void) {
+BENCHMARK(benchmark_fma, "Performance check for fma") {
     for (int i = 0; i < 1000; ++i) {
         float a = 16.5f;
         float b = 18.5f;
@@ -75,17 +75,11 @@ void benchmark_fma(void) {
     }
 }
 
-static Test TESTS[] = {
-    { .test = test_fma_correct_result, .name = "Test if fma returns correct results" },
-    { .test = test_fma_negatives, .name = "Test if fma correctly handles negatives" },
-    { .test = test_failing, .name = "This test will always fail" }
-};
-
-static const Benchmark BENCHMARKS[] = {
-    { .benchmark = benchmark_fma, .name = "Performance check for fma" }
-};
 
 int main(void) {
+    Test TESTS[] = { test_fma_correct_result, test_fma_negatives, test_failing };
+    const Benchmark BENCHMARKS[] = { benchmark_fma };
+
     run_tests(TESTS, sizeof(TESTS) / sizeof(Test));
     run_benchmarks(BENCHMARKS, sizeof(BENCHMARKS) / sizeof(Benchmark), 5, 5);
 
@@ -206,7 +200,7 @@ Documentation is available in the `doc` folder. You can manually generate it wit
 
 ## Notes
 
-* Do not memory allocate inside a test unless you are freeing it before an assertion. The test suite *will* leak memory if the assertion fails.
+* Do not memory allocate inside a test using `stdlib.h`. Use the `testfunc_(m|c|re)alloc` functions instead. They are freed automatically, or you can do so manually using `testfunc_free`.
 * All assertions are macros. Do not use the \_\_-prefixed public functions.
 * For a more detailed version of the example including a sample makefile, see the `example` subdirectory.
 * You must compile this test suite and any test sources with at least the `-g` flag and no optimisation flags (alternatively `-Og`) to get useful results.
