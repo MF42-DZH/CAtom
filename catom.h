@@ -2,7 +2,7 @@
  * @file      catom.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.9.0
+ * @version   1.10.0
  * @date      2021-10-21
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -124,6 +124,7 @@ typedef struct {
 
 /**
  * Create a template for an untimed test.
+ * Assertion failures show the function name prefixed with __.
  *
  * @param test_name   Desired identifier for the test.
  * @param description Description of test which will be printed out when running.
@@ -136,6 +137,9 @@ typedef struct {
 /**
  * Create a template for a timed test.
  *
+ * If an assertion fails within the timed portion, two assertion failures will be reported.
+ * The timed portion's assertion will have a function prefixed with __timed, the wrapper portion is prefixed with __.
+ *
  * @param test_name   Desired identifier for the test.
  * @param description Description of test which will be printed out when running.
  * @param time_limit  A decimal number of seconds time limit.
@@ -144,8 +148,12 @@ typedef struct {
 #define TIMED_TEST(test_name, description, time_limit, early_exit) \
     static void __timed_ ## test_name(void);\
     static void __ ## test_name(void) {\
-        if (early_exit) assert_time_limit_async(__timed_ ## test_name, timeout);\
-        else assert_time_limit(__timed_ ## test_name, timeout);\
+        if (early_exit) {\
+            assert_time_limit_async(__timed_ ## test_name, time_limit);\
+        }\
+        else {\
+            assert_time_limit(__timed_ ## test_name, time_limit);\
+        }\
     }\
     static Test test_name = { __ ## test_name, description, false };\
     static void __timed_ ## test_name(void)
@@ -428,7 +436,11 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
 
 /**
  * Assert the deep equality of an n-dimensional array (that is, they contain the same items).
+ *
  * You must give each dimension's lengths as individual arguments after the size argument.
+ * For example, if you have int[2][3][4]s, you'd call this as:
+ *
+ * assert_deep_array_equals(arr1, arr2, false, false, sizeof(int), 2, 3, 4);
  *
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.
@@ -451,7 +463,11 @@ void __assert_deep_array_equals(const void *arr1, const void *arr2, const bool a
 
 /**
  * Assert the deep inequality of an n-dimensional array (that is, they do not contain the same items).
+ *
  * You must give each dimension's lengths as individual arguments after the size argument.
+ * For example, if you have int[2][3][4]s, you'd call this as:
+ *
+ * assert_deep_array_not_equals(arr1, arr2, false, false, sizeof(int), 2, 3, 4);
  *
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.

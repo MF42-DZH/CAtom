@@ -2,7 +2,7 @@
  * @file      catom.c
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.9.0
+ * @version   1.10.0
  * @date      2021-10-21
  *
  * @copyright 0xFC963F18DC21 (c) 2021
@@ -65,7 +65,7 @@ static void fail_test(void) {
 }
 
 // This is defined separately at the bottom of the file.
-static void terminate_timed_test(void);
+static inline void fail_timed_test(void);
 
 #define __test_assert__(cond) if (!(cond)) {\
     if (Message.width == NARROW) {\
@@ -88,7 +88,7 @@ static void terminate_timed_test(void);
     if (in_benchmark) {\
         fwprintf(stderr, L"\n*** [WARNING] Do not use asserts inside a benchmark or timed test! ***\n");\
     } else if (in_timed) {\
-        terminate_timed_test();\
+        fail_timed_test();\
     } else {\
         fail_test();\
     }\
@@ -149,7 +149,7 @@ void compare_arrays_some(const void *arr1, const void *arr2, const bool arr1ispt
         const void *i2 = get(arr2, arr2isptp, size, ns, argn, current);
 
         if (validator(i1, i2, size)) {
-            ++matches;
+            return;
         }
 
         add_one(current, ns, argn - 1, argn);
@@ -438,7 +438,7 @@ static DWORD WINAPI __testfunc_runner__(void *param __attribute__((unused))) {
     return 0;
 }
 
-static void terminate_timed_test(void) {
+static inline void fail_timed_test(void) {
     TerminateThread(test_thread, -1);
 }
 
@@ -510,8 +510,9 @@ static void __alarm_handler__(int param __attribute__((unused))) {
     }
 }
 
-static void terminate_timed_test(void) {
-    exit(-1);
+static inline __attribute__((noreturn)) void fail_timed_test(void) {
+    raise(SIGKILL);
+    __builtin_unreachable();
 }
 
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
@@ -529,6 +530,9 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
         }
     };
 
+    // We're in a timed test here.
+    in_timed = true;
+
     // Fork process here, where child runs the test function, and parent monitors it.
     switch ((__child__ = fork())) {
         case -1:
@@ -542,9 +546,6 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
             {
                 // Set alarm handler signal to kill child.
                 void (*prev_handler)(int) = signal(SIGALRM, __alarm_handler__);
-
-                // We're in a timed test here.
-                in_timed = true;
 
                 // Set timer, run function, wait for child. If timer expires, child is killed.
                 setitimer(ITIMER_REAL, &timer_init_val, NULL);
