@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-20
+ * @date      2021-10-21
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -15,15 +15,16 @@
  * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
  */
 
-#include "arrcmp.h"
 #include "catom.h"
-#include "genarrays.h"
-#include "hashing.h"
-#include "memalloc.h"
-#include "salloc.h"
-#include "tprinterr.h"
-#include "vbprint.h"
-#include "whatos.h"
+
+#include "libs/arrcmp.h"
+#include "libs/genarrays.h"
+#include "libs/hashing.h"
+#include "libs/memalloc.h"
+#include "libs/salloc.h"
+#include "libs/tprinterr.h"
+#include "libs/vbprint.h"
+#include "libs/whatos.h"
 
 #include <inttypes.h>
 #include <setjmp.h>
@@ -52,6 +53,7 @@ static void print_obj_hashes(const char *format, const void *obj1, const void *o
 static jmp_buf env;
 static size_t failures = 0;
 static bool in_benchmark = false;
+static bool in_timed = false;
 
 void reset_failures(void) {
     failures = 0u;
@@ -80,10 +82,10 @@ static void fail_test(void) {
                 Message.__msg.__wessage\
         );\
     }\
-    if (!in_benchmark) {\
-        fail_test();\
+    if (in_benchmark || in_timed) {\
+        fwprintf(stderr, L"\n*** [WARNING] Do not use asserts inside a benchmark or timed test! ***\n");\
     } else {\
-        fwprintf(stderr, L"\n*** [WARNING] Do not use asserts inside a benchmark! ***\n");\
+        fail_test();\
     }\
 }
 
@@ -172,7 +174,7 @@ void use_verbose_print(const bool should_use) {
     set_verbose_print_status(should_use);
 }
 
-void __run_test(Test *test) {
+static void __run_test(Test *test) {
     fwprintf(stderr, get_verbose_print_status() ? L"Running test \"%s\":\n\n" : L"Running test \"%s\":\n", test->name);
 
     clock_t time = clock();
@@ -195,7 +197,7 @@ void __run_test(Test *test) {
     testfunc_freeall();
 }
 
-clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times) {
+static clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times) {
     in_benchmark = true;
 
     fwprintf(stderr, L"Running benchmark \"%s\":\n\n", benchmark->name);
@@ -437,42 +439,39 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     __running_testfunc__ = func;
     test_semaphore = CreateSemaphore(NULL, 0, 1, NULL);
 
+    // We're in a timed test here.
+    in_timed = true;
+
     // Create our new thread and wait for the semaphore.
     HANDLE t_handle = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
     DWORD test_result = WaitForSingleObject(test_semaphore, time_limit * 1000);
+
+    // Terminate thread and free up resources.
+    TerminateThread(t_handle, -1);
+
+    CloseHandle(test_semaphore);
+    CloseHandle(t_handle);
+
+    // We're no longer in a timed test.
+    in_timed = false;
 
     // Check our result.
     switch (test_result) {
         case WAIT_OBJECT_0:
             // All good.
-            CloseHandle(test_semaphore);
-            CloseHandle(t_handle);
             break;
         case WAIT_TIMEOUT:
             // Function failed to exit.
-            TerminateThread(t_handle, -1);
-            CloseHandle(t_handle);
-            CloseHandle(test_semaphore);
-
             __test_assert__(false);
             break;
         case WAIT_FAILED:
             // Waiting on semaphore failed.
-            TerminateThread(t_handle, -1);
-            CloseHandle(t_handle);
-            CloseHandle(test_semaphore);
-
             fwprintf(stderr, L"*** Failed to wait on semaphore! ***\n");
             __test_assert__(false);
             break;
         default:
             // How did you get here?
-            TerminateThread(t_handle, -1);
-            CloseHandle(t_handle);
-            CloseHandle(test_semaphore);
-
             fwprintf(stderr, L"*** Abnormal wait return: %d. ***\n", test_result);
-
             __test_assert__(false);
             break;
     }
@@ -530,6 +529,9 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
                 // Set alarm handler signal to kill child.
                 void (*prev_handler)(int) = signal(SIGALRM, __alarm_handler__);
 
+                // We're in a timed test here.
+                in_timed = true;
+
                 // Set timer, run function, wait for child. If timer expires, child is killed.
                 setitimer(ITIMER_REAL, &timer_init_val, NULL);
                 waitpid(-1, &child_status, 0);
@@ -540,6 +542,9 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
 
                 // Reset the signal handler to the default.
                 signal(SIGALRM, prev_handler);
+
+                // We're no longer in a timed test.
+                in_timed = false;
 
                 // Check exit code of child process.
                 __test_assert__(WIFEXITED(child_status));

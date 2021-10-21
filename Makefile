@@ -1,10 +1,10 @@
-CC      = gcc
-CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
-LIB     = libcatom.a
-LIBOBJS = catom.o memalloc.o vbprint.o tprinterr.o genarrays.o hashing.o arrcmp.o
-BUILD   = $(LIB)
+export CC     = gcc
+export CFLAGS = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
+export LIB    = libcatom.a
+export LIBOBJ = catom.o
+export BUILD  = $(LIB)
 
-REMOVE =
+export REMOVE =
 ifeq ($(OS), Windows_NT)
 	REMOVE += DEL /S /F /Q
 else
@@ -13,7 +13,7 @@ endif
 
 .SUFFIXES: .c .o
 
-.PHONY: all docs clean clean_docs rebuild remake_docs
+.PHONY: all libs docs clean clean_docs rebuild remake_docs
 
 all: $(BUILD)
 
@@ -21,6 +21,7 @@ rebuild: clean all
 
 clean:
 	$(REMOVE) $(BUILD) *.o
+	+$(MAKE) -C libs clean
 
 docs:
 	+$(MAKE) -C doc
@@ -31,9 +32,10 @@ remake_docs:
 clean_docs:
 	+$(MAKE) clean -C doc
 
-$(LIB): $(LIBOBJS)
-	ar rcs $(LIB) $(LIBOBJS)
+$(LIB): $(LIBOBJ)
+	ar rcs $(LIB) $(LIBOBJ) libs/*.o
 
-memalloc.o: memalloc.h vbprint.h vbprint.o
+libs:
+	+$(MAKE) -C libs
 
-catom.o: catom.h salloc.h memalloc.h memalloc.o vbprint.h vbprint.o tprinterr.h tprinterr.o genarrays.h genarrays.o hashing.h hashing.o arrcmp.h arrcmp.o whatos.h
+catom.o: catom.h libs

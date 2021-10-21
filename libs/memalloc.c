@@ -1,4 +1,4 @@
-#include "catom.h"
+#include "../catom.h"
 #include "memalloc.h"
 #include "vbprint.h"
 

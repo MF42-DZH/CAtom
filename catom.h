@@ -3,7 +3,7 @@
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
  * @version   1.9.0
- * @date      2021-10-20
+ * @date      2021-10-21
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -130,25 +130,6 @@ typedef struct {
     BenchmarkFunction benchmark; /**< Pointer to benchmark function. */
     char name[NAME_MAX_LENGTH];  /**< Benchmark name or description. */
 } Benchmark;
-
-/**
- * Run a single test.
- *
- * @param test Test to run.
- */
-void __run_test(Test *test);
-
-/**
- * Run a single benchmark 'times' amount of times.
- * Before running a benchmark, the function is ran 'warmup' times.
- * Only the time used for the non-warmup runs are usd in the average time calculation.
- *
- * @param  benchmark Benchmark to run.
- * @param  warmup    Number of warmup iterations for benchmark.
- * @param  times     Number of real iterations for benchmark.
- * @return           Time duration of benchmark (all iterations + warmup iterations).
- */
-clock_t __run_benchmark(const Benchmark *benchmark, const size_t warmup, const size_t times);
 
 /**
  * Run an array of tests.
@@ -408,6 +389,7 @@ void __assert_array_not_equals(const void *arr1, const void *arr2, const size_t 
 
 /**
  * Assert the deep equality of an n-dimensional array (that is, they contain the same items).
+ * You must give each dimension's lengths as individual arguments after the size argument.
  *
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.
@@ -430,6 +412,7 @@ void __assert_deep_array_equals(const void *arr1, const void *arr2, const bool a
 
 /**
  * Assert the deep inequality of an n-dimensional array (that is, they do not contain the same items).
+ * You must give each dimension's lengths as individual arguments after the size argument.
  *
  * PRE: no pointer is null.
  * PRE: both arrays contain objects that are the same size.
