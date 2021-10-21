@@ -1,19 +1,3 @@
-/**
- * @file      catom.c
- * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
- * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.10.0
- * @date      2021-10-21
- *
- * @copyright 0xFC963F18DC21 (c) 2021
- *
- * This is CAtom. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
- * and (limited) integration testing on simple functions and pieces of data.
- *
- * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing by default.
- *
- * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
- */
 
 #include "catom.h"
 
@@ -428,47 +412,52 @@ void __assert_time_limit(const TestFunction func, double time_limit) {
 #include <windows.h>
 
 static TestFunction __running_testfunc__;
+
 static HANDLE test_thread = NULL;
-static HANDLE test_semaphore = NULL;
 
 static DWORD WINAPI __testfunc_runner__(void *param __attribute__((unused))) {
     __running_testfunc__();
-    ReleaseSemaphore(test_semaphore, 1, NULL);
-
     return 0;
 }
 
+static bool __passing_tt__ = true;
+
 static inline void fail_timed_test(void) {
+    __passing_tt__ = false;
     TerminateThread(test_thread, -1);
 }
 
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
-    vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
-
     // Initialise our variables and semaphores.
     __running_testfunc__ = func;
-    test_semaphore = CreateSemaphore(NULL, 0, 1, NULL);
 
     // We're in a timed test here.
+    __passing_tt__ = true;
     in_timed = true;
 
     // Create our new thread and wait for the semaphore.
     test_thread = CreateThread(NULL, 0, __testfunc_runner__, NULL, 0, NULL);
-    DWORD test_result = WaitForSingleObject(test_semaphore, time_limit * 1000);
+    DWORD test_result = WaitForSingleObject(test_thread, time_limit * 1000);
 
     // Terminate thread and free up resources.
-    TerminateThread(test_thread, -1);
+    if (test_result != WAIT_OBJECT_0) {
+        TerminateThread(test_thread, -1);
+    }
 
-    CloseHandle(test_semaphore);
     CloseHandle(test_thread);
+    test_thread = NULL;
 
     // We're no longer in a timed test.
     in_timed = false;
 
     // Check our result.
+    vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
+    __set_last_assert(__func__);
+
     switch (test_result) {
         case WAIT_OBJECT_0:
-            // All good.
+            // All good, check if we actually pass all asserts:
+            __test_assert__(__passing_tt__);
             break;
         case WAIT_TIMEOUT:
             // Function failed to exit.
@@ -476,7 +465,7 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
             break;
         case WAIT_FAILED:
             // Waiting on semaphore failed.
-            fwprintf(stderr, L"*** Failed to wait on semaphore! ***\n");
+            fwprintf(stderr, L"*** Failed to wait on thread! ***\n");
             __test_assert__(false);
             break;
         default:

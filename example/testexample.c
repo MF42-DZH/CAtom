@@ -30,7 +30,6 @@ BENCHMARK(benchmark_fma, "Performance check for fma") {
     }
 }
 
-
 int main(void) {
     Test TESTS[] = { test_fma_correct_result, test_fma_negatives, test_failing };
     const Benchmark BENCHMARKS[] = { benchmark_fma };

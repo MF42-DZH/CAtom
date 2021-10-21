@@ -137,8 +137,17 @@ typedef struct {
 /**
  * Create a template for a timed test.
  *
- * If an assertion fails within the timed portion, two assertion failures will be reported.
- * The timed portion's assertion will have a function prefixed with __timed, the wrapper portion is prefixed with __.
+ * -- NON-EARLY-EXITING TESTS --
+ *
+ * If assertions that fail are present inside of a timed test, they will be printed as the failure instead of the timed test failing.
+ *
+ * -- EARLY-EXITING TESTS --
+ *
+ * If an assertion fails within the timed portion, two assertion failures will be reported:
+ * LINUX   - The timed portion's assertion will have a function prefixed with __timed_, the wrapper portion is prefixed with __.
+ * WINDOWS - Both prints will have the __timed_ prefix on the caller.
+ *
+ * One will report the failed assert, the other will report the timed test failed.
  *
  * @param test_name   Desired identifier for the test.
  * @param description Description of test which will be printed out when running.
