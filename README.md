@@ -1,6 +1,6 @@
 ![CAtom](https://raw.githubusercontent.com/0xFC963F18DC21/CAtom/master/doc/CABanner.png)
 
-This is a simple test suite for running unit tests on C code.
+This is a simple test suite library for running unit tests on C code.
 
 ## Quick Start
 
@@ -74,7 +74,6 @@ BENCHMARK(benchmark_fma, "Performance check for fma") {
         float t = exm_fma(a, b, c);
     }
 }
-
 
 int main(void) {
     Test TESTS[] = { test_fma_correct_result, test_fma_negatives, test_failing };
