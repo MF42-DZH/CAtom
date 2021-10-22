@@ -1,3 +1,19 @@
+/**
+ * @file      catom.c
+ * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
+ * @brief     CAtom: A simple C test suite, inspired by JUnit.
+ * @version   1.10.1
+ * @date      2021-10-22
+ *
+ * @copyright 0xFC963F18DC21 (c) 2021
+ *
+ * This is CAtom. A simple, portable test suite and runner inspired by JUnit. It is used to perform unit
+ * and (limited) integration testing on simple functions and pieces of data.
+ *
+ * As mentioned in testsuite.h, add the __VERBOSE__ flag when compiling this test suite to use verbose printing by default.
+ *
+ * See testsuite.h for more information. There are no comments here. This is the wild west of this test suite.
+ */
 
 #include "catom.h"
 
@@ -452,7 +468,8 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
 
     // Check our result.
     vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
-    __set_last_assert(__func__);
+    __set_last_assert(__func__ + 2);
+    __set_last_caller(__last_assert_caller + 6);
 
     switch (test_result) {
         case WAIT_OBJECT_0:

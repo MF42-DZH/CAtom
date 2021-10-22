@@ -2,8 +2,8 @@
  * @file      catom.h
  * @author    0xFC963F18DC21 (crashmacompilers@gmail.com)
  * @brief     CAtom: A simple C test suite, inspired by JUnit.
- * @version   1.10.0
- * @date      2021-10-21
+ * @version   1.10.1
+ * @date      2021-10-22
  *
  * @copyright 0xFC963F18DC21 (c) 2021
  *
@@ -144,8 +144,8 @@ typedef struct {
  * -- EARLY-EXITING TESTS --
  *
  * If an assertion fails within the timed portion, two assertion failures will be reported:
- * LINUX   - The timed portion's assertion will have a function prefixed with __timed_, the wrapper portion is prefixed with __.
- * WINDOWS - Both prints will have the __timed_ prefix on the caller.
+ * 1. The assertion failure in the timed portion.
+ * 2. The cascading assertion failure in the time limit assertion.
  *
  * One will report the failed assert, the other will report the timed test failed.
  *
@@ -245,7 +245,7 @@ size_t count_failures(const Test tests[], const size_t n);
 #define __gen_assert__(name, ...) {\
     const char *__fn_name = #name;\
     __set_last_file(__FILE__);\
-    __set_last_caller(__func__);\
+    __set_last_caller(*__func__ == '_' ? __func__ + 2 : __func__);\
     __set_last_line(__LINE__);\
     __set_last_assert(__fn_name + 2);\
     name(__VA_ARGS__);\
