@@ -40,6 +40,10 @@ static char __last_assert_caller[MAX_STR_LEN] = { '\0' };
 static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
 
+#ifdef OS_WINDOWS
+static int __lloac_back = 0;
+#endif
+
 // Printing utilities.
 static void print_obj_hashes(const char *format, const void *obj1, const void *obj2, size_t size) {
     if (get_verbose_print_status()) {
@@ -172,6 +176,9 @@ void __set_last_assert(const char *assert) {
 }
 
 void __set_last_line(const int line) {
+#ifdef OS_WINDOWS
+    __lloac_back = __last_line_of_assert_caller;
+#endif
     __last_line_of_assert_caller = line;
 }
 
@@ -446,6 +453,7 @@ static inline void fail_timed_test(void) {
 void __assert_time_limit_async(const TestFunction func, double time_limit) {
     // Initialise our variables and semaphores.
     __running_testfunc__ = func;
+    DWORD exit_code = -1;
 
     // We're in a timed test here.
     __passing_tt__ = true;
@@ -460,6 +468,8 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
         TerminateThread(test_thread, -1);
     }
 
+    GetExitCodeThread(test_thread, &exit_code);
+
     CloseHandle(test_thread);
     test_thread = NULL;
 
@@ -470,6 +480,10 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     vbprintf(stderr, "FUNCTION EXITS IN %lf SECONDS?\n", time_limit);
     __set_last_assert(__func__ + 2);
     __set_last_caller(__last_assert_caller + 6);
+
+    if (exit_code != 0) {
+        __set_last_line(__lloac_back);
+    }
 
     switch (test_result) {
         case WAIT_OBJECT_0:
