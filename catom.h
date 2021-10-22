@@ -124,7 +124,6 @@ typedef struct {
 
 /**
  * Create a template for an untimed test.
- * Assertion failures show the function name prefixed with __.
  *
  * @param test_name   Desired identifier for the test.
  * @param description Description of test which will be printed out when running.
@@ -140,6 +139,7 @@ typedef struct {
  * -- NON-EARLY-EXITING TESTS --
  *
  * If assertions that fail are present inside of a timed test, they will be printed as the failure instead of the timed test failing.
+ * Only one assertion failure will be printed.
  *
  * -- EARLY-EXITING TESTS --
  *
