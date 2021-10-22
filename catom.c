@@ -487,7 +487,7 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
         __set_last_line(__lloac_back);
     }
 
-    __loac_back = -1;
+    __lloac_back = -1;
 
     switch (test_result) {
         case WAIT_OBJECT_0:
