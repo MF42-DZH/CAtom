@@ -41,7 +41,7 @@ static char __last_assert_used[MAX_STR_LEN] = { '\0' };
 static int __last_line_of_assert_caller = 0;
 
 #ifdef OS_WINDOWS
-static int __lloac_back = 0;
+static int __lloac_back = -1;
 #endif
 
 // Printing utilities.
@@ -177,7 +177,9 @@ void __set_last_assert(const char *assert) {
 
 void __set_last_line(const int line) {
 #ifdef OS_WINDOWS
-    __lloac_back = __last_line_of_assert_caller;
+    if (__lloac_back < 0) {
+        __lloac_back = __last_line_of_assert_caller;
+    }
 #endif
     __last_line_of_assert_caller = line;
 }
@@ -484,6 +486,8 @@ void __assert_time_limit_async(const TestFunction func, double time_limit) {
     if (exit_code != 0) {
         __set_last_line(__lloac_back);
     }
+
+    __loac_back = -1;
 
     switch (test_result) {
         case WAIT_OBJECT_0:
