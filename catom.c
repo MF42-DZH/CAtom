@@ -177,7 +177,7 @@ void __set_last_assert(const char *assert) {
 
 void __set_last_line(const int line) {
 #ifdef OS_WINDOWS
-    if (__lloac_back < 0) {
+    if (__lloac_back < 0 && __last_line_of_assert_caller > 0) {
         __lloac_back = __last_line_of_assert_caller;
     }
 #endif
