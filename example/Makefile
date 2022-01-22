@@ -1,4 +1,4 @@
-CC      = cc
+CC      = gcc
 CFLAGS  = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 LDFLAGS = -L.. -lcatom
 NAME    = testexample
