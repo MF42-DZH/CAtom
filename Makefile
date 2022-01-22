@@ -1,4 +1,4 @@
-export CC     = gcc
+export CC     = cc
 export CFLAGS = -g3 -Og -D_POSIX_SOURCE -D_DEFAULT_SOURCE -std=c99 -Wextra -Werror -pedantic
 export LIB    = libcatom.a
 export LIBOBJ = catom.o
