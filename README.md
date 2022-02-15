@@ -197,6 +197,11 @@ Benchmarks completed in 0.000061 seconds.
 
 Documentation is available in the `doc` folder. You can manually generate it with doxygen, or use the makefile to call doxygen for you. The makefile also contains cleaning commands to clear out the created documentation.
 
+## Tested With
+
+* MinGW GCC 10.3 on Windows 10
+* GCC 11.x on Unix systems
+
 ## Notes
 
 * Do not memory allocate inside a test using `stdlib.h`. Use the `testfunc_(m|c|re)alloc` functions instead. They are freed automatically, or you can do so manually using `testfunc_free`.
